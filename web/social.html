@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>社交</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+body {
+  background: #ffffff;
+  padding-top: 60px;
+}
+.back-btn {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  font-size: 24px;
+  color: #007aff;
+  text-decoration: none;
+  z-index: 999;
+}
+.app-wrap {
+  padding: 20px 15px;
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px 10px;
+}
+.app-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.app-item img {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+.app-item span {
+  font-size: 12px;
+  color: #333;
+  margin-top: 6px;
+}
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-box {
+  background: #fff;
+  width: 85%;
+  max-width: 340px;
+  border-radius: 20px;
+  padding: 25px 20px;
+  position: relative;
+  text-align: center;
+}
+.close-x {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 22px;
+  color: #999;
+  cursor: pointer;
+}
+.modal-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 15px;
+  background: #f2f2f7;
+}
+.acc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px 15px;
+  margin: 15px 0;
+}
+.acc-text {
+  font-size: 15px;
+  word-break: break-all;
+}
+.copy-btn {
+  background: #007aff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">←</a>
+
+<div class="app-wrap">
+  <div class="app-item" onclick="openPop('douyin')">
+    <img src="douyin.png">
+    <span>抖音</span>
+  </div>
+  <div class="app-item" onclick="openPop('bilibili')">
+    <img src="bilibili.png">
+    <span>B站</span>
+  </div>
+  <div class="app-item" onclick="openPop('xiaohongshu')">
+    <img src="xiaohongshu.png">
+    <span>小红书</span>
+  </div>
+  <div class="app-item" onclick="openPop('weibo')">
+    <img src="weibo.png">
+    <span>微博</span>
+  </div>
+  <div class="app-item" onclick="openPop('music163')">
+    <img src="music163.png">
+    <span>网易云</span>
+  </div>
+</div>
+
+<div class="modal" id="modal" onclick="closePopBg(event)">
+  <div class="modal-box">
+    <span class="close-x" onclick="closePop()">×</span>
+    <img class="modal-avatar" id="popAvatar" src="">
+    <div id="popTitle" style="font-size:18px;font-weight:600;margin-bottom:10px;"></div>
+    <div class="acc-row">
+      <span class="acc-text" id="popAcc"></span>
+      <button class="copy-btn" onclick="copyAcc()">复制</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const info = {
+  douyin:{name:'抖音',acc:'食堂打烊 抖音号：H21841'},
+  bilibili:{name:'哔哩哔哩',acc:'黑土同学的伊邪那美'},
+  xiaohongshu:{name:'小红书',acc:'食堂不耐烦'},
+  weibo:{name:'微博',acc:'别演kk吧'},
+  music163:{name:'网易云音乐',acc:'食堂打烊'}
+};
+let nowAcc = '';
+function openPop(key){
+  let d = info[key];
+  nowAcc = d.acc;
+  document.getElementById('popTitle').innerText = d.name;
+  document.getElementById('popAcc').innerText = d.acc;
+  document.getElementById('modal').style.display = 'flex';
+}
+function closePop(){
+  document.getElementById('modal').style.display = 'none';
+}
+function closePopBg(e){
+  if(e.target.id === 'modal') closePop();
+}
+function copyAcc(){
+  navigator.clipboard.writeText(nowAcc).then(()=>alert('已复制'));
+}
+</script>
+</body>
+</html>
