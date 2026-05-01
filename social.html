@@ -29,11 +29,22 @@ body {
   display:grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 25px 10px;
+  /* 入场动画 */
+  animation: fadeIn 0.5s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .app-item {
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+.app-item:hover {
+  transform: scale(1.05);
 }
 .app-item img {
   width: 60px;
@@ -45,6 +56,10 @@ body {
   font-size: 12px;
   color: #333;
   margin-top: 6px;
+  /* 昵称分行 */
+  word-break: break-all;
+  text-align: center;
+  line-height: 1.4;
 }
 .modal {
   position: fixed;
@@ -54,6 +69,11 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: modalFade 0.3s ease-out;
+}
+@keyframes modalFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .modal-box {
   background: #fff;
@@ -63,6 +83,11 @@ body {
   padding: 25px 20px;
   position: relative;
   text-align: center;
+  animation: modalScale 0.3s ease-out;
+}
+@keyframes modalScale {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 .close-x {
   position: absolute;
@@ -71,6 +96,10 @@ body {
   font-size: 22px;
   color: #999;
   cursor: pointer;
+  transition: color 0.2s ease;
+}
+.close-x:hover {
+  color: #007aff;
 }
 .modal-avatar {
   width: 70px;
@@ -79,6 +108,7 @@ body {
   object-fit: cover;
   margin: 0 auto 15px;
   background: #f2f2f7;
+  border: 2px solid #f0f0f5;
 }
 .acc-row {
   display: flex;
@@ -88,10 +118,16 @@ body {
   border-radius: 12px;
   padding: 12px 15px;
   margin: 15px 0;
+  transition: border-color 0.2s ease;
+}
+.acc-row:hover {
+  border-color: #007aff;
 }
 .acc-text {
   font-size: 15px;
   word-break: break-all;
+  /* 账号分行 */
+  line-height: 1.4;
 }
 .copy-btn {
   background: #007aff;
@@ -100,6 +136,22 @@ body {
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.copy-btn:hover {
+  background: #0066e0;
+}
+/* 适配电脑端 */
+@media (min-width: 768px) {
+  .app-wrap {
+    grid-template-columns: repeat(6, 1fr);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .modal-box {
+    max-width: 400px;
+  }
 }
 </style>
 </head>
@@ -108,31 +160,51 @@ body {
 
 <div class="app-wrap">
   <div class="app-item" onclick="openPop('douyin')">
-    <img src="douyin.png">
+    <img src="douyin.png" alt="抖音图标">
     <span>抖音</span>
   </div>
   <div class="app-item" onclick="openPop('bilibili')">
-    <img src="bilibili.png">
+    <img src="bilibili.png" alt="B站图标">
     <span>B站</span>
   </div>
   <div class="app-item" onclick="openPop('xiaohongshu')">
-    <img src="xiaohongshu.png">
+    <img src="xiaohongshu.png" alt="小红书图标">
     <span>小红书</span>
   </div>
   <div class="app-item" onclick="openPop('weibo')">
-    <img src="weibo.png">
+    <img src="weibo.png" alt="微博图标">
     <span>微博</span>
   </div>
   <div class="app-item" onclick="openPop('music163')">
-    <img src="music163.png">
+    <img src="music163.png" alt="网易云图标">
     <span>网易云</span>
+  </div>
+  <div class="app-item" onclick="openPop('instagram')">
+    <img src="instagram.png" alt="Instagram图标">
+    <span>Instagram</span>
+  </div>
+  <div class="app-item" onclick="openPop('facebook')">
+    <img src="facebook.png" alt="Facebook图标">
+    <span>Facebook</span>
+  </div>
+  <div class="app-item" onclick="openPop('twitter')">
+    <img src="twitter.png" alt="X（Twitter）图标">
+    <span>X（Twitter）</span>
+  </div>
+  <div class="app-item" onclick="openPop('youtube')">
+    <img src="youtube.png" alt="YouTube图标">
+    <span>YouTube</span>
+  </div>
+  <div class="app-item" onclick="openPop('tiktok')">
+    <img src="tiktok.png" alt="TikTok图标">
+    <span>TikTok</span>
   </div>
 </div>
 
 <div class="modal" id="modal" onclick="closePopBg(event)">
   <div class="modal-box">
     <span class="close-x" onclick="closePop()">×</span>
-    <img class="modal-avatar" id="popAvatar" src="">
+    <img class="modal-avatar" id="popAvatar" src="" alt="社交平台头像">
     <div id="popTitle" style="font-size:18px;font-weight:600;margin-bottom:10px;"></div>
     <div class="acc-row">
       <span class="acc-text" id="popAcc"></span>
@@ -142,30 +214,121 @@ body {
 </div>
 
 <script>
+// 拆分账号和显示文本，只复制纯ID
 const info = {
-  douyin:{name:'抖音',acc:'食堂打烊 抖音号：H21841'},
-  bilibili:{name:'哔哩哔哩',acc:'黑土同学的伊邪那美'},
-  xiaohongshu:{name:'小红书',acc:'食堂不耐烦'},
-  weibo:{name:'微博',acc:'别演kk吧'},
-  music163:{name:'网易云音乐',acc:'食堂打烊'}
+  douyin:{
+    name:'抖音',
+    showAcc:'食堂打烊 抖音号：H21841',
+    copyAcc:'H21841', // 只复制ID
+    avatar: 'douyin.png'
+  },
+  bilibili:{
+    name:'哔哩哔哩',
+    showAcc:'黑土同学的伊邪那美',
+    copyAcc:'黑土同学的伊邪那美',
+    avatar: 'bilibili.png'
+  },
+  xiaohongshu:{
+    name:'小红书',
+    showAcc:'食堂不耐烦',
+    copyAcc:'食堂不耐烦',
+    avatar: 'xiaohongshu.png'
+  },
+  weibo:{
+    name:'微博',
+    showAcc:'别演kk吧',
+    copyAcc:'别演kk吧',
+    avatar: 'weibo.png'
+  },
+  music163:{
+    name:'网易云音乐',
+    showAcc:'食堂打烊',
+    copyAcc:'食堂打烊',
+    avatar: 'music163.png'
+  },
+  instagram:{
+    name:'Instagram',
+    showAcc:'hajjsnns1',
+    copyAcc:'hajjsnns1',
+    avatar: 'instagram.png'
+  },
+  facebook:{
+    name:'Facebook',
+    showAcc:'Haorui Ding（关联邮箱：jiba3687@gmail.com）',
+    copyAcc:'Haorui Ding', // 只复制核心ID
+    avatar: 'facebook.png'
+  },
+  twitter:{
+    name:'X（Twitter）',
+    showAcc:'@ji_ba63651',
+    copyAcc:'ji_ba63651', // 只复制ID（去掉@）
+    avatar: 'twitter.png'
+  },
+  youtube:{
+    name:'YouTube',
+    showAcc:'@baji-o3i',
+    copyAcc:'baji-o3i', // 只复制ID（去掉@）
+    avatar: 'youtube.png'
+  },
+  tiktok:{
+    name:'TikTok',
+    showAcc:'@haha6668888aaaa',
+    copyAcc:'haha6668888aaaa', // 只复制ID（去掉@）
+    avatar: 'tiktok.png'
+  }
 };
-let nowAcc = '';
+
+let nowCopyAcc = ''; // 存储要复制的纯ID
+
 function openPop(key){
   let d = info[key];
-  nowAcc = d.acc;
+  nowCopyAcc = d.copyAcc; // 只存纯ID
+  // 设置显示内容和头像
   document.getElementById('popTitle').innerText = d.name;
-  document.getElementById('popAcc').innerText = d.acc;
+  document.getElementById('popAcc').innerText = d.showAcc;
+  document.getElementById('popAvatar').src = d.avatar;
+  // 显示弹窗
   document.getElementById('modal').style.display = 'flex';
 }
+
 function closePop(){
   document.getElementById('modal').style.display = 'none';
 }
+
 function closePopBg(e){
   if(e.target.id === 'modal') closePop();
 }
+
 function copyAcc(){
-  navigator.clipboard.writeText(nowAcc).then(()=>alert('已复制'));
+  // 只复制纯ID
+  navigator.clipboard.writeText(nowCopyAcc).then(()=>{
+    // 美化提示
+    const tip = document.createElement('div');
+    tip.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      animation: fadeOut 1.5s ease-out;
+    `;
+    tip.innerText = '已复制';
+    document.body.appendChild(tip);
+    setTimeout(() => tip.remove(), 1500);
+  }).catch(()=>{
+    alert('复制失败，请手动复制');
+  });
 }
+
+// ESC关闭弹窗（电脑端适配）
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') closePop();
+});
 </script>
 </body>
 </html>

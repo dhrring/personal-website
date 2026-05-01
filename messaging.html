@@ -25,17 +25,30 @@ body {
   text-decoration: none;
   z-index: 999;
 }
-/* App 桌面布局 手机专用 */
+/* App 桌面布局 手机/电脑适配 */
 .app-wrap {
   padding: 20px 15px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 25px 10px;
+  animation: fadeIn 0.5s ease-out;
+  /* 电脑端居中 */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .app-item {
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+.app-item:hover {
+  transform: scale(1.05);
 }
 .app-item img {
   width: 60px;
@@ -47,6 +60,9 @@ body {
   font-size: 12px;
   color: #333;
   margin-top: 6px;
+  word-break: break-all;
+  text-align: center;
+  line-height: 1.4;
 }
 /* 弹窗遮罩 */
 .modal {
@@ -57,6 +73,11 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: modalFade 0.3s ease-out;
+}
+@keyframes modalFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .modal-box {
   background: #fff;
@@ -66,6 +87,11 @@ body {
   padding: 25px 20px;
   position: relative;
   text-align: center;
+  animation: modalScale 0.3s ease-out;
+}
+@keyframes modalScale {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 .close-x {
   position: absolute;
@@ -74,6 +100,10 @@ body {
   font-size: 22px;
   color: #999;
   cursor: pointer;
+  transition: color 0.2s ease;
+}
+.close-x:hover {
+  color: #007aff;
 }
 .modal-avatar {
   width: 70px;
@@ -82,7 +112,9 @@ body {
   object-fit: cover;
   margin: 0 auto 15px;
   background: #f2f2f7;
+  border: 2px solid #f0f0f5;
 }
+/* 适配多个账号行的样式 */
 .acc-row {
   display: flex;
   align-items: center;
@@ -91,10 +123,15 @@ body {
   border-radius: 12px;
   padding: 12px 15px;
   margin: 15px 0;
+  transition: border-color 0.2s ease;
+}
+.acc-row:hover {
+  border-color: #007aff;
 }
 .acc-text {
   font-size: 15px;
   word-break: break-all;
+  line-height: 1.4;
 }
 .copy-btn {
   background: #007aff;
@@ -103,13 +140,73 @@ body {
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
+.copy-btn:hover {
+  background: #0066e0;
+}
+/* 二维码样式 + 图片预览画廊 */
 .qr-img {
   width: 140px;
   height: 140px;
   margin-top: 10px;
   border-radius: 12px;
   display: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  border: 2px solid #f0f0f5;
+}
+.qr-img:hover {
+  transform: scale(1.02);
+}
+/* 图片预览画廊遮罩 */
+.gallery-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  animation: galleryFade 0.3s ease-out;
+}
+@keyframes galleryFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* 预览图片 */
+.gallery-img {
+  max-width: 90%;
+  max-height: 90vh;
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+/* 关闭画廊按钮 */
+.gallery-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 30px;
+  color: #fff;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.gallery-close:hover {
+  color: #007aff;
+}
+/* 电脑端适配 */
+@media (min-width: 768px) {
+  .app-wrap {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  .modal-box {
+    max-width: 400px;
+  }
+  .qr-img {
+    width: 180px;
+    height: 180px;
+  }
 }
 </style>
 </head>
@@ -120,28 +217,24 @@ body {
 <!-- 纯App图标列表 打开页面直接就是这个 -->
 <div class="app-wrap">
   <div class="app-item" onclick="openPop('wechat')">
-    <img src="wechat_icon.png">
+    <img src="wechat_icon.png" alt="微信图标">
     <span>微信</span>
   </div>
   <div class="app-item" onclick="openPop('qq')">
-    <img src="qq_icon.png">
+    <img src="qq_icon.png" alt="QQ图标">
     <span>QQ</span>
   </div>
   <div class="app-item" onclick="openPop('tg')">
-    <img src="telegram_icon.png">
+    <img src="telegram_icon.png" alt="Telegram图标">
     <span>Telegram</span>
   </div>
+  <div class="app-item" onclick="openPop('whatsapp')">
+    <img src="whatsapp_icon.png" alt="WhatsApp图标">
+    <span>WhatsApp</span>
+  </div>
   <div class="app-item" onclick="openPop('email')">
-    <img src="email_icon.png">
-    <span>QQ邮箱</span>
-  </div>
-  <div class="app-item" onclick="openPop('outlook')">
-    <img src="outlook_icon.png">
-    <span>Outlook</span>
-  </div>
-  <div class="app-item" onclick="openPop('gmail')">
-    <img src="gmail_icon.png">
-    <span>Gmail</span>
+    <img src="email_icon.png" alt="邮箱图标">
+    <span>邮箱</span>
   </div>
 </div>
 
@@ -149,53 +242,181 @@ body {
 <div class="modal" id="modal" onclick="closePopBg(event)">
   <div class="modal-box">
     <span class="close-x" onclick="closePop()">×</span>
-    <img class="modal-avatar" id="popAvatar" src="">
+    <img class="modal-avatar" id="popAvatar" src="" alt="通讯工具头像">
     <div id="popTitle" style="font-size:18px;font-weight:600;"></div>
-    <div class="acc-row">
-      <span class="acc-text" id="popAcc"></span>
-      <button class="copy-btn" onclick="copyAcc()">复制</button>
-    </div>
-    <img class="qr-img" id="popQr" src="">
+    <!-- 动态生成账号行的容器 -->
+    <div id="accContainer"></div>
+    <img class="qr-img" id="popQr" src="" alt="二维码" onclick="openGallery(this.src)">
   </div>
+</div>
+
+<!-- 图片预览画廊 -->
+<div class="gallery-mask" id="galleryMask" onclick="closeGallery()">
+  <span class="gallery-close" onclick="closeGallery()">×</span>
+  <img class="gallery-img" id="galleryImg" src="" alt="预览图片">
 </div>
 
 <script>
 const info = {
-  wechat: {name:'微信',acc:'Dininghallrests',qr:'wechat.png'},
-  qq: {name:'QQ',acc:'2152966253',qr:'qq.png'},
-  tg: {name:'Telegram',acc:'@Dininghallrests',qr:'telegram.png'},
-  email: {name:'QQ邮箱',acc:'2152966253@qq.com'},
-  outlook: {name:'Outlook',acc:'m2152966253@outlook.com'},
-  gmail: {name:'Gmail',acc:'jiba3687@gmail.com'}
-};
-let nowAcc = '';
-
-function openPop(key){
-  let d = info[key];
-  nowAcc = d.acc;
-  document.getElementById('popTitle').innerText = d.name;
-  document.getElementById('popAcc').innerText = d.acc;
-  // 头像预留 你以后放头像改src就行
-  document.getElementById('popAvatar').src = '';
-  // 二维码
-  let qr = document.getElementById('popQr');
-  if(d.qr){
-    qr.src = d.qr;
-    qr.style.display = 'block';
-  }else{
-    qr.style.display = 'none';
+  wechat: {
+    name:'微信',
+    acc:'Dininghallrests',
+    qr:'wechat.png',
+    avatar: 'wechat_icon.png' // 自定义头像
+  },
+  qq: {
+    name:'QQ',
+    acc:'2152966253',
+    qr:'qq.png',
+    avatar: 'qq_icon.png' // 自定义头像
+  },
+  tg: {
+    name:'Telegram',
+    acc:'@Dininghallrests',
+    qr:'telegram.png',
+    avatar: 'telegram_icon.png' // 自定义头像
+  },
+  whatsapp: {
+    name:'食堂打烊',
+    acc:'',
+    qr:'whatsapp.png',
+    avatar: 'whatsapp_icon.png' // 自定义头像
+  },
+  email: {
+    name:'邮箱',
+    accList: [
+      {name: 'QQ邮箱', acc: '2152966253@qq.com'},
+      {name: 'Outlook', acc: 'm2152966253@outlook.com'},
+      {name: 'Gmail', acc: 'jiba3687@gmail.com'}
+    ],
+    avatar: 'email_icon.png' // 自定义头像
   }
-  document.getElementById('modal').style.display = 'flex';
+};
+
+// 打开弹窗函数
+function openPop(key){
+  const d = info[key];
+  const modal = document.getElementById('modal');
+  const popTitle = document.getElementById('popTitle');
+  const popAvatar = document.getElementById('popAvatar');
+  const popQr = document.getElementById('popQr');
+  const accContainer = document.getElementById('accContainer');
+  
+  // 清空之前的账号行
+  accContainer.innerHTML = '';
+
+  // 设置标题和自定义头像
+  popTitle.innerText = d.name;
+  popAvatar.src = d.avatar;
+
+  // 处理二维码显示
+  if(d.qr){
+    popQr.src = d.qr;
+    popQr.style.display = 'block';
+  }else{
+    popQr.style.display = 'none';
+  }
+
+  // 生成账号行：区分单个账号和多个账号（邮箱）
+  if(d.accList){
+    // 多个账号（邮箱）：循环生成每行
+    d.accList.forEach(item => {
+      const accRow = document.createElement('div');
+      accRow.className = 'acc-row';
+      accRow.innerHTML = `
+        <span class="acc-text">${item.name}：${item.acc}</span>
+        <button class="copy-btn" onclick="copyAcc('${item.acc}')">复制</button>
+      `;
+      accContainer.appendChild(accRow);
+    });
+  }else{
+    // 单个账号（微信/QQ/Telegram/WhatsApp）
+    const accRow = document.createElement('div');
+    accRow.className = 'acc-row';
+    // WhatsApp无账号，只显示二维码，隐藏复制按钮
+    const copyBtnHtml = d.acc ? `<button class="copy-btn" onclick="copyAcc('${d.acc}')">复制</button>` : '';
+    accRow.innerHTML = `
+      <span class="acc-text">${d.acc || '-'}</span>
+      ${copyBtnHtml}
+    `;
+    accContainer.appendChild(accRow);
+  }
+
+  // 显示弹窗
+  modal.style.display = 'flex';
 }
+
+// 关闭弹窗
 function closePop(){
   document.getElementById('modal').style.display = 'none';
 }
+
+// 点击弹窗背景关闭
 function closePopBg(e){
   if(e.target.id === 'modal') closePop();
 }
-function copyAcc(){
-  navigator.clipboard.writeText(nowAcc).then(()=>alert('已复制'));
+
+// 复制账号（接收要复制的内容参数）
+function copyAcc(text){
+  if(!text) return; // 无内容时不执行
+  navigator.clipboard.writeText(text).then(()=>{
+    // 美化提示
+    const tip = document.createElement('div');
+    tip.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      animation: fadeOut 1.5s ease-out;
+    `;
+    tip.innerText = '已复制';
+    document.body.appendChild(tip);
+    setTimeout(() => tip.remove(), 1500);
+  }).catch(()=>{
+    alert('复制失败，请手动复制');
+  });
 }
+
+// 打开图片预览画廊
+function openGallery(src){
+  const galleryMask = document.getElementById('galleryMask');
+  const galleryImg = document.getElementById('galleryImg');
+  galleryImg.src = src;
+  galleryMask.style.display = 'flex';
+  // 禁止页面滚动
+  document.body.style.overflow = 'hidden';
+}
+
+// 关闭图片预览画廊
+function closeGallery(){
+  const galleryMask = document.getElementById('galleryMask');
+  galleryMask.style.display = 'none';
+  // 恢复页面滚动
+  document.body.style.overflow = 'auto';
+}
+
+// 画廊图片缩放（鼠标滚轮/触屏缩放）
+let scale = 1;
+document.getElementById('galleryImg').addEventListener('wheel', (e) => {
+  e.preventDefault();
+  scale += e.deltaY > 0 ? -0.1 : 0.1;
+  scale = Math.max(0.5, Math.min(scale, 3)); // 限制缩放范围
+  e.target.style.transform = `scale(${scale})`;
+});
+
+// ESC关闭弹窗/画廊（电脑端适配）
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') {
+    closePop();
+    closeGallery();
+  }
+});
 </script>
 
 </body>

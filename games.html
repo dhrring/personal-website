@@ -9,10 +9,10 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 body {
-  background: #ffffff;
+  background: #f8fafc;
   padding-top: 60px;
 }
 .back-btn {
@@ -20,13 +20,13 @@ body {
   top: 15px;
   left: 15px;
   font-size: 24px;
-  color: #007aff;
+  color: #0a499d;
   text-decoration: none;
   z-index: 999;
 }
 .app-wrap {
   padding: 20px 15px;
-  display:grid;
+  display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 25px 10px;
 }
@@ -34,6 +34,13 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.5s ease;
+}
+.app-item.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 .app-item img {
   width: 60px;
@@ -43,128 +50,342 @@ body {
 }
 .app-item span {
   font-size: 12px;
-  color: #333;
+  color: #334155;
   margin-top: 6px;
+  text-align: center;
 }
+
+/* 弹窗 */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(10,73,157,0.3);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.modal.show {
+  opacity: 1;
 }
 .modal-box {
   background: #fff;
   width: 85%;
-  max-width: 340px;
+  max-width: 360px;
   border-radius: 20px;
-  padding: 25px 20px;
+  padding: 28px 22px;
   position: relative;
   text-align: center;
+  transform: scale(0.8);
+  transition: transform 0.3s ease;
+}
+.modal.show .modal-box {
+  transform: scale(1);
 }
 .close-x {
   position: absolute;
-  top: 15px;
+  top: 16px;
   right: 20px;
   font-size: 22px;
-  color: #999;
+  color: #64748b;
   cursor: pointer;
 }
 .modal-avatar {
-  width: 70px;
-  height: 70px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   object-fit: cover;
-  margin: 0 auto 15px;
-  background: #f2f2f7;
+  margin: 0 auto 16px;
+  background: #f1f5f9;
 }
-.acc-row {
+#popTitle {
+  font-size: 19px;
+  font-weight: 600;
+  color: #0a499d;
+  margin-bottom: 20px;
+}
+
+/* 账号行（分行 + 只复制ID） */
+.acc-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 12px 15px;
-  margin: 15px 0;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
 }
-.acc-text {
+.acc-item:last-child {
+  border-bottom: none;
+}
+.acc-label {
   font-size: 15px;
-  word-break: break-all;
+  color: #334155;
+  font-weight: 500;
 }
-.copy-btn {
-  background: #007aff;
+.acc-value {
+  font-size: 15px;
+  color: #0a499d;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.acc-value:hover {
+  background: #eff6ff;
+}
+
+/* 画廊 */
+.gallery {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.gallery-item {
+  width: 100%;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+}
+
+/* 图片预览 */
+.img-preview {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.img-preview.show {
+  display: flex;
+}
+.preview-img {
+  max-width: 92%;
+  max-height: 92%;
+  object-fit: contain;
+  transition: transform 0.18s ease;
+}
+.img-preview .close-x {
+  top: 22px;
+  right: 26px;
   color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 13px;
+  font-size: 28px;
 }
 </style>
 </head>
 <body>
+
 <a href="index.html" class="back-btn">←</a>
 
 <div class="app-wrap">
   <div class="app-item" onclick="openPop('steam')">
-    <img src="steam.png">
+    <img src="steam.png" alt="Steam">
     <span>Steam</span>
   </div>
   <div class="app-item" onclick="openPop('epic')">
-    <img src="epic.png">
+    <img src="epic.png" alt="Epic">
     <span>Epic</span>
   </div>
   <div class="app-item" onclick="openPop('xbox')">
-    <img src="xbox.png">
+    <img src="xbox.png" alt="Xbox">
     <span>Xbox</span>
   </div>
   <div class="app-item" onclick="openPop('naruto')">
-    <img src="naruto.png">
+    <img src="naruto.png" alt="火影忍者">
     <span>火影忍者</span>
   </div>
   <div class="app-item" onclick="openPop('wangzhe')">
-    <img src="wangzhe.png">
+    <img src="wangzhe.png" alt="王者荣耀">
     <span>王者荣耀</span>
   </div>
 </div>
 
+<!-- 弹窗 -->
 <div class="modal" id="modal" onclick="closePopBg(event)">
   <div class="modal-box">
     <span class="close-x" onclick="closePop()">×</span>
     <img class="modal-avatar" id="popAvatar" src="">
-    <div id="popTitle" style="font-size:18px;font-weight:600;margin-bottom:10px;"></div>
-    <div class="acc-row">
-      <span class="acc-text" id="popAcc"></span>
-      <button class="copy-btn" onclick="copyAcc()">复制</button>
-    </div>
+    <div id="popTitle"></div>
+    <div id="accContainer"></div>
+    <div id="galleryContainer" class="gallery"></div>
   </div>
 </div>
 
+<!-- 图片预览 -->
+<div class="img-preview" id="imgPreview" onclick="closeImgPreviewBg(event)">
+  <span class="close-x" onclick="closeImgPreview()">×</span>
+  <img src="" class="preview-img" id="previewImg">
+</div>
+
 <script>
-const info = {
-  steam:{name:'Steam',acc:'1559561177'},
-  epic:{name:'Epic',acc:'@食堂打烊'},
-  xbox:{name:'Xbox',acc:'@dhring8295'},
-  naruto:{name:'火影忍者',acc:'v区 昵称食堂打烊 id:24175522072'},
-  wangzhe:{name:'王者荣耀',acc:'q区 id：堂打烊'}
+// 游戏信息配置
+const gameData = {
+  steam: {
+    name: "Steam",
+    avatar: "steam_avatar.png",
+    items: [
+      { label: "昵称", value: "食堂打烊" },
+      { label: "ID", value: "1559561177" }
+    ],
+    gallery: ["steam1.png","steam2.png","steam3.png"]
+  },
+  epic: {
+    name: "Epic",
+    avatar: "epic_avatar.png",
+    items: [
+      { label: "昵称", value: "食堂打烊" }
+    ],
+    gallery: ["epic1.png","epic2.png","epic3.png"]
+  },
+  xbox: {
+    name: "Xbox",
+    avatar: "xbox_avatar.png",
+    items: [
+      { label: "ID", value: "dhring8295" }
+    ],
+    gallery: ["xbox1.png","xbox2.png","xbox3.png"]
+  },
+  naruto: {
+    name: "火影忍者",
+    avatar: "naruto_avatar.png",
+    items: [
+      { label: "区服", value: "V区" },
+      { label: "昵称", value: "食堂打烊" },
+      { label: "ID", value: "24175522072" }
+    ],
+    gallery: ["naruto1.png","naruto2.png","naruto3.png"]
+  },
+  wangzhe: {
+    name: "王者荣耀",
+    avatar: "wangzhe_avatar.png",
+    items: [
+      { label: "昵称", value: "食堂打烊" }
+    ],
+    gallery: ["wangzhe1.png","wangzhe2.png","wangzhe3.png"]
+  }
 };
-let nowAcc = '';
-function openPop(key){
-  let d = info[key];
-  nowAcc = d.acc;
+
+let currentScale = 1;
+
+// 入场动画
+window.addEventListener('DOMContentLoaded', () => {
+  const items = document.querySelectorAll('.app-item');
+  items.forEach((el, i) => {
+    setTimeout(() => el.classList.add('show'), 100 * i);
+  });
+});
+
+// 打开弹窗
+function openPop(key) {
+  const d = gameData[key];
   document.getElementById('popTitle').innerText = d.name;
-  document.getElementById('popAcc').innerText = d.acc;
-  document.getElementById('modal').style.display = 'flex';
+
+  // 头像：不存在则用默认
+  const avatar = document.getElementById('popAvatar');
+  avatar.src = d.avatar;
+  avatar.onerror = () => { avatar.src = 'a_avatar.png' };
+
+  // 渲染账号分行
+  const accBox = document.getElementById('accContainer');
+  accBox.innerHTML = '';
+  d.items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'acc-item';
+    div.innerHTML = `
+      <span class="acc-label">${item.label}</span>
+      <span class="acc-value" onclick="copyText('${item.value}')">${item.value}</span>
+    `;
+    accBox.appendChild(div);
+  });
+
+  // 渲染画廊（所有游戏都有）
+  const gallery = document.getElementById('galleryContainer');
+  gallery.innerHTML = '';
+  d.gallery.forEach(src => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.className = 'gallery-item';
+    img.onerror = () => img.style.display = 'none';
+    img.onclick = () => openImgPreview(src);
+    gallery.appendChild(img);
+  });
+
+  const modal = document.getElementById('modal');
+  modal.style.display = 'flex';
+  setTimeout(() => modal.classList.add('show'), 10);
 }
-function closePop(){
-  document.getElementById('modal').style.display = 'none';
+
+// 复制（只复制右侧ID/昵称）
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert('已复制：' + text);
+  }).catch(() => {
+    alert('复制失败，请手动复制');
+  });
 }
-function closePopBg(e){
-  if(e.target.id === 'modal') closePop();
+
+// 关闭弹窗
+function closePop() {
+  const m = document.getElementById('modal');
+  m.classList.remove('show');
+  setTimeout(() => m.style.display = 'none', 300);
 }
-function copyAcc(){
-  navigator.clipboard.writeText(nowAcc).then(()=>alert('已复制'));
+function closePopBg(e) {
+  if (e.target.id === 'modal') closePop();
+}
+
+// 图片预览
+function openImgPreview(src) {
+  const p = document.getElementById('imgPreview');
+  const img = document.getElementById('previewImg');
+  img.src = src;
+  currentScale = 1;
+  img.style.transform = `scale(${currentScale})`;
+  p.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeImgPreview() {
+  document.getElementById('imgPreview').classList.remove('show');
+  document.body.style.overflow = 'auto';
+}
+function closeImgPreviewBg(e) {
+  if (e.target.id === 'imgPreview') closeImgPreview();
+}
+
+// 滚轮缩放
+document.getElementById('previewImg').addEventListener('wheel', e => {
+  e.preventDefault();
+  currentScale += e.deltaY > 0 ? -0.12 : 0.12;
+  currentScale = Math.max(0.5, Math.min(3.2, currentScale));
+  previewImg.style.transform = `scale(${currentScale})`;
+});
+
+// 二指缩放
+let startDist = 0;
+document.getElementById('imgPreview').addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    startDist = getDist(e.touches[0], e.touches[1]);
+  }
+});
+document.getElementById('imgPreview').addEventListener('touchmove', e => {
+  if (e.touches.length === 2) {
+    const now = getDist(e.touches[0], e.touches[1]);
+    currentScale = Math.max(0.5, Math.min(3.2, currentScale * (now / startDist)));
+    previewImg.style.transform = `scale(${currentScale})`;
+    startDist = now;
+  }
+});
+function getDist(t1, t2) {
+  const x = t2.clientX - t1.clientX;
+  const y = t2.clientY - t1.clientY;
+  return Math.sqrt(x*x + y*y);
 }
 </script>
 </body>

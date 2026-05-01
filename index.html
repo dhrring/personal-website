@@ -13,58 +13,108 @@
         }
 
         body {
-            background-color: #ffffff;
-            color: #1d1d1f;
+            background-color: #f8fafc; /* 浅灰蓝背景，更商务 */
+            color: #1e293b;
             line-height: 1.6;
+            overflow-x: hidden; /* 隐藏动画时的横向滚动 */
         }
 
-        /* 个人介绍区域 */
+        /* 通用响应式样式 */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 入场动画定义 */
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* 个人介绍区域 - 商务风格+动画 */
         .profile-section {
-            max-width: 1000px;
             margin: 60px auto;
             padding: 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 40px;
+            /* 动画容器 */
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards 0.2s;
         }
 
         .profile-left {
             flex: 1;
+            animation: slideInLeft 0.8s ease forwards; /* 左侧元素从左移入 */
         }
 
         .name-en {
-            font-size: 22px;
-            color: #007aff;
+            font-size: clamp(18px, 2vw, 22px);
+            color: #0a499d; /* 商务主蓝 */
             font-weight: 500;
+            letter-spacing: 0.5px; /* 商务感字间距 */
         }
 
         .name-cn {
-            font-size: 48px;
+            font-size: clamp(32px, 5vw, 48px);
             font-weight: 700;
             margin: 5px 0 25px;
+            color: #0a499d;
+            letter-spacing: 1px;
         }
 
         .info-item {
-            font-size: 19px;
+            font-size: clamp(16px, 2vw, 19px);
             margin: 12px 0;
             display: flex;
             align-items: center;
         }
 
         .info-title {
-            width: 100px;
-            font-weight: 500;
+            width: clamp(80px, 10vw, 100px);
+            font-weight: 600;
+            color: #334155; /* 深灰蓝，商务次级文字 */
         }
 
         .info-content {
-            color: #007aff;
+            color: #0a499d;
             font-weight: 600;
             position: relative;
             display: inline;
         }
 
-        /* 荧光高光效果 */
+        /* 商务风高光效果（替换原荧光） */
         .highlight {
             position: relative;
             z-index: 0;
@@ -75,26 +125,27 @@
             position: absolute;
             bottom: 2px;
             left: 0;
-            height: 10px;
+            height: 8px;
             width: 100%;
-            background-color: rgba(0, 122, 255, 0.15);
+            background: linear-gradient(90deg, rgba(10, 73, 157, 0.1), rgba(10, 73, 157, 0.2)); /* 渐变蓝高光 */
             z-index: -1;
-            border-radius: 4px;
+            border-radius: 2px; /* 更锐利的商务圆角 */
         }
 
         .big-text {
-            font-size: 32px;
+            font-size: clamp(24px, 3vw, 32px);
             font-weight: 600;
             margin-top: 40px;
-            color: #1d1d1f;
+            color: #334155;
         }
 
         .profile-right {
-            width: 280px;
-            height: 370px;
-            border-radius: 20px;
+            width: clamp(200px, 30vw, 280px);
+            height: clamp(260px, 40vw, 370px);
+            border-radius: 16px; /* 更小圆角，更商务 */
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 24px rgba(10, 73, 157, 0.15); /* 蓝调阴影 */
+            animation: slideInRight 0.8s ease forwards; /* 右侧头像从右移入 */
         }
 
         .profile-right img {
@@ -103,31 +154,34 @@
             object-fit: cover;
         }
 
-        /* 账号四宫格 */
+        /* 账号四宫格 - 商务风格+动画 */
         .account-section {
-            max-width: 1000px;
             margin: 0 auto 80px;
             padding: 0 20px;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards 0.5s; /* 延迟入场 */
         }
 
         .section-title {
-            font-size: 36px;
+            font-size: clamp(28px, 4vw, 36px);
             font-weight: 700;
             text-align: center;
             margin-bottom: 40px;
-            color: #007aff;
+            color: #0a499d;
+            letter-spacing: 1px;
         }
 
         .grid-box {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 24px;
         }
 
         .grid-item {
-            background: #f5f5f7;
-            border-radius: 20px;
-            height: 220px;
+            background: #ffffff;
+            border: 1px solid rgba(10, 73, 157, 0.1); /* 细蓝边框 */
+            border-radius: 16px;
+            height: clamp(180px, 25vw, 220px);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -135,35 +189,59 @@
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            color: #1d1d1f;
+            color: #1e293b;
+            position: relative;
+            overflow: hidden;
         }
 
+        /* 商务风hover效果 */
         .grid-item:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 12px 30px rgba(10, 73, 157, 0.12);
+            border-color: rgba(10, 73, 157, 0.2);
+        }
+
+        /* 四宫格item入场动画（逐个延迟） */
+        .grid-item:nth-child(1) {
+            animation: fadeInUp 0.6s ease forwards 0.7s;
+            opacity: 0;
+        }
+        .grid-item:nth-child(2) {
+            animation: fadeInUp 0.6s ease forwards 0.8s;
+            opacity: 0;
+        }
+        .grid-item:nth-child(3) {
+            animation: fadeInUp 0.6s ease forwards 0.9s;
+            opacity: 0;
+        }
+        .grid-item:nth-child(4) {
+            animation: fadeInUp 0.6s ease forwards 1s;
+            opacity: 0;
         }
 
         .grid-item img {
-            width: 70px;
-            height: 70px;
-            border-radius: 16px;
+            width: clamp(60px, 8vw, 70px);
+            height: clamp(60px, 8vw, 70px);
+            border-radius: 12px; /* 更商务的圆角 */
             margin-bottom: 16px;
             object-fit: cover;
         }
 
         .grid-item h3 {
-            font-size: 22px;
+            font-size: clamp(18px, 2.5vw, 22px);
             font-weight: 600;
+            color: #0a499d;
         }
 
-        /* 子页面通用样式 */
+        /* 子页面通用样式 - 商务化调整 */
         .back-btn {
             position: fixed;
             top: 30px;
             left: 30px;
             width: 44px;
             height: 44px;
-            background: #f2f2f7;
+            background: #ffffff;
+            border: 1px solid rgba(10, 73, 157, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -172,7 +250,8 @@
             cursor: pointer;
             z-index: 999;
             text-decoration: none;
-            color: #007aff;
+            color: #0a499d;
+            box-shadow: 0 4px 12px rgba(10, 73, 157, 0.1);
         }
 
         .app-container {
@@ -183,7 +262,7 @@
 
         .app-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
             gap: 24px;
         }
 
@@ -195,40 +274,44 @@
         }
 
         .app-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 16px;
+            width: clamp(60px, 8vw, 70px);
+            height: clamp(60px, 8vw, 70px);
+            border-radius: 12px;
             object-fit: cover;
             margin-bottom: 8px;
         }
 
         .app-name {
-            font-size: 14px;
+            font-size: clamp(12px, 1.5vw, 14px);
             font-weight: 500;
             text-align: center;
+            color: #334155;
         }
 
-        /* 弹窗 */
+        /* 弹窗 - 商务风格优化 */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(10, 73, 157, 0.4); /* 蓝调遮罩 */
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 9999;
+            padding: 20px;
         }
 
         .modal-content {
             background: white;
-            width: 380px;
-            border-radius: 20px;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 16px;
             padding: 30px;
             position: relative;
             text-align: center;
+            box-shadow: 0 10px 30px rgba(10, 73, 157, 0.2);
         }
 
         .close {
@@ -237,7 +320,7 @@
             right: 18px;
             font-size: 22px;
             cursor: pointer;
-            color: #888;
+            color: #64748b;
         }
 
         .modal-avatar {
@@ -246,11 +329,12 @@
             border-radius: 50%;
             object-fit: cover;
             margin: 0 auto 15px;
+            border: 2px solid rgba(10, 73, 157, 0.1);
         }
 
         .account-box {
-            border: 2px solid #e5e5ea;
-            border-radius: 12px;
+            border: 1px solid rgba(10, 73, 157, 0.2);
+            border-radius: 10px;
             padding: 14px 18px;
             font-size: 17px;
             font-weight: 500;
@@ -258,16 +342,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: #f8fafc;
         }
 
         .copy-btn {
-            background: #007aff;
+            background: #0a499d; /* 商务蓝按钮 */
             color: white;
             border: none;
             padding: 8px 14px;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #083a7f; /* 深一点的蓝，hover反馈 */
         }
 
         /* 二维码 */
@@ -276,14 +366,115 @@
             height: 160px;
             margin: 10px auto;
             object-fit: cover;
-            border-radius: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(10, 73, 157, 0.1);
+        }
+
+        /* 媒体查询 - 手机端适配 */
+        @media (max-width: 768px) {
+            /* 个人介绍区域改为垂直布局 */
+            .profile-section {
+                flex-direction: column;
+                margin: 40px auto;
+                gap: 30px;
+                text-align: center;
+            }
+
+            .info-item {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .info-title {
+                margin-right: 10px;
+                width: auto;
+            }
+
+            /* 调整间距和大小 */
+            .profile-right {
+                margin-bottom: 20px;
+            }
+
+            .account-section {
+                margin: 0 auto 60px;
+            }
+
+            .grid-box {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .grid-item {
+                height: 200px;
+            }
+
+            /* 返回按钮调整 */
+            .back-btn {
+                top: 20px;
+                left: 20px;
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            /* 弹窗适配 */
+            .modal-content {
+                padding: 20px;
+            }
+
+            .account-box {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .copy-btn {
+                width: 100%;
+            }
+        }
+
+        /* 小屏手机优化 (< 480px) */
+        @media (max-width: 480px) {
+            .profile-section {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .account-section {
+                padding: 0 15px;
+                margin: 0 auto 40px;
+            }
+
+            .grid-item {
+                height: 180px;
+            }
+
+            .big-text {
+                margin-top: 30px;
+                font-size: 20px;
+            }
+
+            .qrcode {
+                width: 140px;
+                height: 140px;
+            }
+        }
+
+        /* 大屏电脑优化 (> 1200px) */
+        @media (min-width: 1200px) {
+            .profile-section, .account-section {
+                max-width: 1100px;
+            }
+
+            .grid-box {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
     </style>
 </head>
 <body>
 
 <!-- ===================== 主页 - 个人介绍 ===================== -->
-<div class="profile-section">
+<div class="profile-section container">
     <div class="profile-left">
         <div class="name-en">Ding Haorui</div>
         <div class="name-cn">丁浩睿</div>
@@ -314,7 +505,7 @@
 </div>
 
 <!-- ===================== 主页 - 账号四宫格 ===================== -->
-<div class="account-section">
+<div class="account-section container">
     <div class="section-title">我的账号</div>
     <div class="grid-box">
         <a href="messaging.html" class="grid-item">
