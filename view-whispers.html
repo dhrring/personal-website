@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>查看悄悄话</title>
+    <style>
+        body{background:#f8fafc;padding:20px;}
+        .card{background:white;padding:20px;border-radius:16px;margin:10px 0;}
+        .time{color:#666;font-size:14px;}
+        img{max-width:100px;margin:5px;border-radius:8px;}
+    </style>
+</head>
+<body>
+    <h1>📩 收到的悄悄话</h1>
+    <div id="list"></div>
+
+    <script>
+        const TOKEN = "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";
+        const GIST = "9ec855ae71f4e7db556403a4a9923cad";
+
+        (async ()=>{
+            let res = await fetch(`https://api.github.com/gists/${GIST}`,{
+                headers:{Authorization:`token ${TOKEN}`}
+            });
+            let data = await res.json();
+            let list = JSON.parse(data.files['whispers.json'].content);
+            list.sort((a,b)=>b.id-a.id).forEach(item=>{
+                let div = document.createElement('div');
+                div.className='card';
+                div.innerHTML = `
+                    <div class="time">${item.time}</div>
+                    <p>${item.text}</p>
+                    ${item.images.map(i=>`<img src="${i}">`).join('')}
+                `;
+                document.getElementById('list').appendChild(div);
+            });
+        })();
+    </script>
+</body>
+</html>
