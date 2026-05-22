@@ -5,47 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>查看悄悄话</title>
     <style>
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-            font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-        body{
-            background:#f8fafc;
-            padding:20px;
-        }
-        .card{
-            background:white;
-            padding:20px;
-            border-radius:16px;
-            margin:12px 0;
-            box-shadow:0 4px 12px rgba(0,0,0,0.05);
-        }
-        .time{
-            color:#666;
-            font-size:14px;
-            margin-bottom:8px;
-        }
-        p{
-            font-size:16px;
-            line-height:1.6;
-            margin-bottom:10px;
-            white-space:pre-wrap;
-        }
-        img{
-            max-width:100px;
-            max-height:100px;
-            margin:5px;
-            border-radius:8px;
-            object-fit:cover;
-            cursor:pointer;
-        }
-        h1{
-            text-align:center;
-            color:#0a499d;
-            margin-bottom:20px;
-        }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system, sans-serif;}
+        body{background:#f8fafc;padding:20px;}
+        .card{background:white;padding:20px;border-radius:16px;margin:12px 0;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+        .time{color:#666;font-size:14px;margin-bottom:8px;}
+        p{font-size:16px;line-height:1.6;margin-bottom:10px;white-space:pre-wrap;}
+        img{max-width:100px;max-height:100px;margin:5px;border-radius:8px;object-fit:cover;cursor:pointer;}
+        h1{text-align:center;color:#0a499d;margin-bottom:20px;}
     </style>
 </head>
 <body>
@@ -58,7 +24,10 @@
 
         (async ()=>{
             try{
-                let res = await fetch(`https://api.github.com/gists/${GIST}`,{
+                const proxyUrl = `https://api.allorigins.win/raw?url=`;
+                const gistApiUrl = `https://api.github.com/gists/${GIST}`;
+
+                let res = await fetch(proxyUrl + encodeURIComponent(gistApiUrl), {
                     headers:{ Authorization: `token ${TOKEN}` }
                 });
                 let data = await res.json();
@@ -80,7 +49,8 @@
                     document.getElementById('list').appendChild(div);
                 });
             }catch(e){
-                document.getElementById('list').innerHTML = "<p style='text-align:center;color:red;'>加载失败，请检查网络</p>";
+                document.getElementById('list').innerHTML = `<p style='text-align:center;color:red;'>加载失败：${e.message}</p>`;
+                console.error(e);
             }
         })();
     </script>
