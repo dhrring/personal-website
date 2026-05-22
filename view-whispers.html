@@ -2,12 +2,50 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>查看悄悄话</title>
     <style>
-        body{background:#f8fafc;padding:20px;}
-        .card{background:white;padding:20px;border-radius:16px;margin:10px 0;}
-        .time{color:#666;font-size:14px;}
-        img{max-width:100px;margin:5px;border-radius:8px;}
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body{
+            background:#f8fafc;
+            padding:20px;
+        }
+        .card{
+            background:white;
+            padding:20px;
+            border-radius:16px;
+            margin:12px 0;
+            box-shadow:0 4px 12px rgba(0,0,0,0.05);
+        }
+        .time{
+            color:#666;
+            font-size:14px;
+            margin-bottom:8px;
+        }
+        p{
+            font-size:16px;
+            line-height:1.6;
+            margin-bottom:10px;
+            white-space:pre-wrap;
+        }
+        img{
+            max-width:100px;
+            max-height:100px;
+            margin:5px;
+            border-radius:8px;
+            object-fit:cover;
+            cursor:pointer;
+        }
+        h1{
+            text-align:center;
+            color:#0a499d;
+            margin-bottom:20px;
+        }
     </style>
 </head>
 <body>
@@ -15,25 +53,35 @@
     <div id="list"></div>
 
     <script>
-        const TOKEN = "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";
+        const TOKEN = "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";
         const GIST = "9ec855ae71f4e7db556403a4a9923cad";
 
         (async ()=>{
-            let res = await fetch(`https://api.github.com/gists/${GIST}`,{
-                headers:{Authorization:`token ${TOKEN}`}
-            });
-            let data = await res.json();
-            let list = JSON.parse(data.files['whispers.json'].content);
-            list.sort((a,b)=>b.id-a.id).forEach(item=>{
-                let div = document.createElement('div');
-                div.className='card';
-                div.innerHTML = `
-                    <div class="time">${item.time}</div>
-                    <p>${item.text}</p>
-                    ${item.images.map(i=>`<img src="${i}">`).join('')}
-                `;
-                document.getElementById('list').appendChild(div);
-            });
+            try{
+                let res = await fetch(`https://api.github.com/gists/${GIST}`,{
+                    headers:{ Authorization: `token ${TOKEN}` }
+                });
+                let data = await res.json();
+                let list = JSON.parse(data.files['whispers.json'].content || '[]');
+                
+                if(list.length === 0){
+                    document.getElementById('list').innerHTML = "<p style='text-align:center;color:#666;margin-top:50px;'>暂无留言</p>";
+                    return;
+                }
+
+                list.sort((a,b)=>b.id-a.id).forEach(item=>{
+                    let div = document.createElement('div');
+                    div.className='card';
+                    div.innerHTML = `
+                        <div class="time">${item.time}</div>
+                        <p>${item.text || '（无文字）'}</p>
+                        ${item.images ? item.images.map(i=>`<img src="${i}">`).join('') : ''}
+                    `;
+                    document.getElementById('list').appendChild(div);
+                });
+            }catch(e){
+                document.getElementById('list').innerHTML = "<p style='text-align:center;color:red;'>加载失败，请检查网络</p>";
+            }
         })();
     </script>
 </body>

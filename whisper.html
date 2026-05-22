@@ -17,6 +17,21 @@
             color: #1e293b;
         }
 
+        /* 提交成功震动动画 */
+        @keyframes successShake {
+            0% { transform: scale(1); }
+            20% { transform: scale(1.02); }
+            40% { transform: scale(0.98); }
+            60% { transform: scale(1.01); }
+            80% { transform: scale(0.99); }
+            100% { transform: scale(1); }
+        }
+
+        /* 成功后给body加动画 */
+        body.success-shake {
+            animation: successShake 0.5s ease;
+        }
+
         .back-btn {
             position: fixed;
             top: 30px;
@@ -142,6 +157,8 @@
             border-radius: 8px;
             display: none;
             z-index: 999;
+            font-size: 16px;
+            box-shadow: 0 4px 20px rgba(10,73,157,0.3);
         }
     </style>
 </head>
@@ -167,21 +184,18 @@
     </div>
 </div>
 
-<div class="success-tip" id="successTip">✅ 发送成功！</div>
+<div class="success-tip" id="successTip">✅ 发送成功！感谢你的留言😊</div>
 
 <script>
-    // 已填入你的真实信息
-    const GITHUB_TOKEN = "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";
+    const GITHUB_TOKEN = "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";
     const GIST_ID = "9ec855ae71f4e7db556403a4a9923cad";
 
-    // 字数统计
     const memoText = document.getElementById('memoText');
     const wordCount = document.getElementById('wordCount');
     memoText.addEventListener('input', () => {
         wordCount.textContent = `${memoText.value.length}/1000`;
     });
 
-    // 图片上传
     const imageInput = document.getElementById('imageInput');
     const uploadArea = document.getElementById('uploadArea');
     const uploadBtn = document.getElementById('uploadBtn');
@@ -204,10 +218,13 @@
         imageInput.value = '';
     });
 
-    // 提交
     document.getElementById('submitBtn').onclick = async () => {
         let text = memoText.value.trim();
         if(!text && images.length===0) { alert('请输入内容或上传图片'); return; }
+
+        let btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.textContent = "发送中...";
 
         let imgList = [];
         for(let f of images) {
@@ -221,26 +238,43 @@
             time: new Date().toLocaleString('zh-CN')
         };
 
-        let res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-            headers: { Authorization: `token ${GITHUB_TOKEN}` }
-        });
-        let data = await res.json();
-        let list = JSON.parse(data.files['whispers.json'].content || '[]');
-        list.push(msg);
+        try {
+            let res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                headers: { Authorization: `token ${GITHUB_TOKEN}` }
+            });
+            let data = await res.json();
+            let list = JSON.parse(data.files['whispers.json'].content || '[]');
+            list.push(msg);
 
-        await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-            method: 'PATCH',
-            headers: {
-                Authorization: `token ${GITHUB_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                files: { 'whispers.json': { content: JSON.stringify(list, null, 2) } }
-            })
-        });
+            await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: { 'whispers.json': { content: JSON.stringify(list, null, 2) } }
+                })
+            });
 
-        document.getElementById('successTip').style.display = 'block';
-        setTimeout(() => location.reload(), 2000);
+            // =============================================
+            // ✅ 提交成功：页面震动 + 显示提示
+            // =============================================
+            document.body.classList.add('success-shake');
+            setTimeout(() => {
+                document.body.classList.remove('success-shake');
+            }, 500);
+
+            document.getElementById('successTip').style.display = 'block';
+
+            // 2秒后刷新页面
+            setTimeout(() => location.reload(), 2000);
+
+        } catch (e) {
+            alert("发送失败，请重试");
+            btn.disabled = false;
+            btn.textContent = "发送悄悄话";
+        }
     };
 
     function toBase64(file) {
