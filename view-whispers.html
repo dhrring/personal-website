@@ -5,54 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>查看悄悄话</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system, sans-serif;}
-        body{background:#f8fafc;padding:20px;}
-        .card{background:white;padding:20px;border-radius:16px;margin:12px 0;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
-        .time{color:#666;font-size:14px;margin-bottom:8px;}
-        p{font-size:16px;line-height:1.6;margin-bottom:10px;white-space:pre-wrap;}
-        img{max-width:100px;max-height:100px;margin:5px;border-radius:8px;object-fit:cover;cursor:pointer;}
-        h1{text-align:center;color:#0a499d;margin-bottom:20px;}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            background: #f7f8fa;
+            padding: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .title {
+            text-align: center;
+            margin: 30px 0;
+            font-size: 24px;
+            color: #333;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .time {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>📩 收到的悄悄话</h1>
+    <h1 class="title">悄悄话列表</h1>
     <div id="list"></div>
 
     <script>
-        const TOKEN = "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";
-        const GIST = "9ec855ae71f4e7db556403a4a9923cad";
+        async function loadWhispers() {
+            try {
+                let res = await fetch("https://haorui.xyz/api/whispers");
+                let list = await res.json();
 
-        (async ()=>{
-            try{
-                const proxyUrl = `https://api.allorigins.win/raw?url=`;
-                const gistApiUrl = `https://api.github.com/gists/${GIST}`;
-
-                let res = await fetch(proxyUrl + encodeURIComponent(gistApiUrl), {
-                    headers:{ Authorization: `token ${TOKEN}` }
-                });
-                let data = await res.json();
-                let list = JSON.parse(data.files['whispers.json'].content || '[]');
-                
-                if(list.length === 0){
-                    document.getElementById('list').innerHTML = "<p style='text-align:center;color:#666;margin-top:50px;'>暂无留言</p>";
+                if (!list || list.length === 0) {
+                    document.getElementById("list").innerHTML = "<p style='text-align:center;color:#666;margin-top:50px;'>暂无留言</p>";
                     return;
                 }
 
-                list.sort((a,b)=>b.id-a.id).forEach(item=>{
-                    let div = document.createElement('div');
-                    div.className='card';
+                list.sort((a, b) => b.id - a.id);
+
+                list.forEach(item => {
+                    let div = document.createElement("div");
+                    div.className = "card";
                     div.innerHTML = `
                         <div class="time">${item.time}</div>
-                        <p>${item.text || '（无文字）'}</p>
-                        ${item.images ? item.images.map(i=>`<img src="${i}">`).join('') : ''}
+                        <p>${item.text || "（无文字）"}</p>
+                        ${item.images ? item.images.map(img => `<img src="${img}">`).join("") : ""}
                     `;
-                    document.getElementById('list').appendChild(div);
+                    document.getElementById("list").appendChild(div);
                 });
-            }catch(e){
-                document.getElementById('list').innerHTML = `<p style='text-align:center;color:red;'>加载失败：${e.message}</p>`;
-                console.error(e);
+            } catch (e) {
+                document.getElementById("list").innerHTML = "<p style='text-align:center;color:#999'>加载失败，请刷新重试</p>";
             }
-        })();
+        }
+        loadWhispers();
     </script>
 </body>
 </html>
