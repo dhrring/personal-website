@@ -50,6 +50,10 @@
             font-size: 16px;
             cursor: pointer;
         }
+        button:disabled {
+            background: #aaa;
+            cursor: not-allowed;
+        }
         #successTip {
             text-align: center;
             color: #00b42a;
@@ -62,50 +66,279 @@
         @keyframes shake {
             0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-5px)}
         }
+
+        /* ===== 图片上传样式 ===== */
+        .upload-area {
+            margin-bottom: 15px;
+        }
+        .upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: #f0f4ff;
+            color: #4e8aff;
+            border: 1px dashed #4e8aff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            user-select: none;
+        }
+        .upload-btn:hover {
+            background: #e6edff;
+        }
+        .upload-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .preview-item .remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            border: none;
+            padding: 0;
+        }
+        .preview-item .progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: #4e8aff;
+            transition: width 0.3s;
+        }
+        .upload-status {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+            min-height: 16px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>写下你的悄悄话</h1>
         <textarea id="content" placeholder="说点什么..."></textarea>
-        <button onclick="send()">发送悄悄话</button>
+
+        <div class="upload-area">
+            <label class="upload-btn" id="uploadLabel">
+                📷 添加图片（最多9张）
+                <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+            </label>
+            <div class="preview-grid" id="previewGrid"></div>
+            <div class="upload-status" id="uploadStatus"></div>
+        </div>
+
+        <button id="sendBtn" onclick="send()">发送悄悄话</button>
         <div id="successTip">发送成功！</div>
     </div>
 
     <script>
-        function send() {
-            let text = document.getElementById("content").value.trim();
-            if (!text) {
-                alert("请输入内容");
+        const MAX_IMAGES = 9;
+        const MAX_WIDTH = 1280;    // 压缩后最大宽度
+        const QUALITY = 0.75;      // JPEG 质量
+        const API_BASE = "https://haorui.xyz";
+
+        let uploadedImages = [];   // 已上传成功的图片 URL
+        let uploading = false;     // 是否有图片正在上传
+
+        const fileInput = document.getElementById('fileInput');
+        const previewGrid = document.getElementById('previewGrid');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const uploadLabel = document.getElementById('uploadLabel');
+
+        fileInput.addEventListener('change', handleFiles);
+
+        async function handleFiles(e) {
+            const files = Array.from(e.target.files);
+            if (uploadedImages.length + files.length > MAX_IMAGES) {
+                alert(`最多上传 ${MAX_IMAGES} 张图片，当前已有 ${uploadedImages.length} 张`);
+                fileInput.value = '';
+                return;
+            }
+            // 逐张处理（压缩+上传），避免并发过高
+            for (const file of files) {
+                await processAndUpload(file);
+            }
+            fileInput.value = '';
+        }
+
+        // 处理单张图片：压缩 → 预览 → 上传
+        async function processAndUpload(file) {
+            uploading = true;
+            uploadLabel.classList.add('disabled');
+            uploadStatus.textContent = '正在压缩图片...';
+
+            try {
+                // 1. 本地压缩，返回纯 base64（不含 data:image/... 前缀）
+                const compressedBase64 = await compressImage(file);
+
+                // 2. 显示预览
+                const previewItem = createPreviewItem(compressedBase64);
+                previewGrid.appendChild(previewItem);
+
+                // 3. 上传到后端
+                uploadStatus.textContent = `正在上传 (${uploadedImages.length + 1})...`;
+                const url = await uploadImage(compressedBase64, file.name);
+                uploadedImages.push(url);
+
+                // 上传完成，进度条满
+                const progress = previewItem.querySelector('.progress');
+                if (progress) {
+                    progress.style.width = '100%';
+                    setTimeout(() => progress.remove(), 500);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('图片上传失败: ' + (err.message || '未知错误'));
+            } finally {
+                uploading = false;
+                uploadLabel.classList.remove('disabled');
+                updateStatus();
+            }
+        }
+
+        // Canvas 压缩图片，返回 base64（纯内容）
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let { width, height } = img;
+                        // 等比缩放
+                        if (width > MAX_WIDTH) {
+                            height = Math.round((height * MAX_WIDTH) / width);
+                            width = MAX_WIDTH;
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        // 转 JPEG base64，去掉前缀
+                        const dataUrl = canvas.toDataURL('image/jpeg', QUALITY);
+                        resolve(dataUrl.split(',')[1]);
+                    };
+                    img.onerror = () => reject(new Error('图片加载失败'));
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => reject(new Error('文件读取失败'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 上传到后端 /api/upload
+        async function uploadImage(base64, filename) {
+            const res = await fetch(`${API_BASE}/api/upload`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: base64, filename })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || '上传失败');
+            return data.url;
+        }
+
+        // 创建预览卡片
+        function createPreviewItem(base64) {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `
+                <img src="data:image/jpeg;base64,${base64}" alt="preview">
+                <button class="remove" title="移除">×</button>
+                <div class="progress" style="width:40%"></div>
+            `;
+            div.querySelector('.remove').addEventListener('click', () => {
+                if (uploading) {
+                    alert('图片正在上传中，请稍候再移除');
+                    return;
+                }
+                const idx = Array.from(previewGrid.children).indexOf(div);
+                if (idx >= 0 && idx < uploadedImages.length) {
+                    uploadedImages.splice(idx, 1);
+                }
+                div.remove();
+                updateStatus();
+            });
+            return div;
+        }
+
+        function updateStatus() {
+            if (uploading) return;
+            if (uploadedImages.length > 0) {
+                uploadStatus.textContent = `已添加 ${uploadedImages.length} 张图片`;
+            } else {
+                uploadStatus.textContent = '';
+            }
+        }
+
+        // 提交悄悄话
+        async function send() {
+            if (uploading) {
+                alert('图片正在上传中，请稍候');
+                return;
+            }
+            const text = document.getElementById("content").value.trim();
+            if (!text && uploadedImages.length === 0) {
+                alert("请输入内容或添加图片");
                 return;
             }
 
-            let msg = {
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.textContent = '发送中...';
+
+            const msg = {
                 id: Date.now(),
                 text: text,
-                images: [],
+                images: uploadedImages,
                 time: new Date().toLocaleString("zh-CN")
             };
 
-            submitWhisper(msg);
-        }
-
-        async function submitWhisper(msg) {
             try {
-                await fetch("https://haorui.xyz/api/whispers", {
+                await fetch(`${API_BASE}/api/whispers`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(msg)
                 });
 
                 document.body.classList.add("success-shake");
-                setTimeout(() => {
-                    document.body.classList.remove("success-shake");
-                }, 500);
+                setTimeout(() => document.body.classList.remove("success-shake"), 500);
                 document.getElementById("successTip").style.display = "block";
                 setTimeout(() => location.reload(), 2000);
             } catch (e) {
                 alert("发送失败，请重试");
+                btn.disabled = false;
+                btn.textContent = '发送悄悄话';
             }
         }
     </script>
