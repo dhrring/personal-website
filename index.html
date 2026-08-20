@@ -12,13 +12,124 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        body {
-            background-color: #f8fafc;
+        html, body {
+            height: 100%;
             color: #1e293b;
-            line-height: 1.6;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
+        .scroll-wrapper {
+            height: 100vh;
+            overflow-y: auto;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            background-color: #f8fafc;
+        }
+
+        .scroll-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-wrapper::-webkit-scrollbar-thumb {
+            background-color: #0a499d40;
+            border-radius: 4px;
+        }
+
+        .page {
+            height: 100vh;
+            scroll-snap-align: start;
+            position: relative;
+        }
+
+        /* ========== 开场屏风 ========== */
+        .screen-splash {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #0a499d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.55s ease;
+        }
+
+        .screen-splash.bg-fade {
+            background: #f8fafc;
+        }
+
+        .splash-center {
+            text-align: center;
+        }
+
+        .splash-domain {
+            font-size: clamp(34px, 9vw, 62px);
+            color: #ffffff;
+            font-weight: 700;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: all 0.7s ease;
+        }
+
+        .splash-domain.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .splash-proverb {
+            margin-top: 12px;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .splash-proverb.show {
+            opacity: 1;
+        }
+
+        .splash-cn {
+            font-size: clamp(22px, 4.5vw, 32px);
+            color: #ffffff;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            line-height: 1.45;
+            transition: all 0.55s ease;
+        }
+
+        .splash-en {
+            font-size: clamp(15px, 2.8vw, 20px);
+            color: #ffffff;
+            font-weight: 400;
+            margin-top: 10px;
+            white-space: nowrap;
+            text-align: center;
+            transition: all 0.55s ease;
+        }
+
+        .splash-fade-out {
+            opacity: 0 !important;
+            transition: opacity 0.55s ease;
+        }
+
+        /* ========== 全局底部英文谚语 ========== */
+        .footer-en {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%) translateY(24px);
+            font-size: 13px;
+            color: #94a3b8;
+            opacity: 0;
+            z-index: 10;
+            white-space: nowrap;
+            text-align: center;
+            transition: all 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .footer-en.active {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ========== 页面容器 ========== */
         .container {
             width: 100%;
             max-width: 1200px;
@@ -26,36 +137,56 @@
             padding: 0 20px;
         }
 
-        @keyframes fadeInUp {
-            from {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
+        /* ========== 第一页：个人介绍 ========== */
         .profile-section {
-            margin: 60px auto;
-            padding: 0 20px;
+            height: 100vh;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 40px;
-            opacity: 0;
-            animation: fadeInUp 0.8s ease forwards 0.2s;
+            padding-top: 4vh;
         }
 
         .profile-left {
             flex: 1;
+            opacity: 0;
+            transform: translateX(-45px);
+            animation: fadeInLeft 0.9s ease forwards;
+            animation-delay: 0.35s;
+        }
+
+        .profile-right {
+            width: clamp(200px, 30vw, 280px);
+            height: clamp(260px, 40vw, 370px);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(10, 73, 157, 0.15);
+            opacity: 0;
+            transform: translateX(45px);
+            animation: fadeInRight 0.9s ease forwards;
+            animation-delay: 0.55s;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-right:hover {
+            transform: scale(1.04);
+        }
+
+        .profile-right img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .name-en {
             font-size: clamp(18px, 2vw, 22px);
             color: #0a499d;
             font-weight: 500;
+            transition: transform 0.25s ease;
+        }
+
+        .name-en:hover {
+            transform: scale(1.06);
         }
 
         .name-cn {
@@ -63,6 +194,11 @@
             font-weight: 700;
             margin: 5px 0 25px;
             color: #0a499d;
+            transition: transform 0.25s ease;
+        }
+
+        .name-cn:hover {
+            transform: scale(1.06);
         }
 
         .info-item {
@@ -70,6 +206,30 @@
             margin: 12px 0;
             display: flex;
             align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.65s ease forwards;
+            transition: transform 0.25s ease;
+        }
+
+        .info-item:hover {
+            transform: scale(1.04);
+        }
+
+        .info-item:nth-child(1) {
+            animation-delay: 0.45s;
+        }
+
+        .info-item:nth-child(2) {
+            animation-delay: 0.58s;
+        }
+
+        .info-item:nth-child(3) {
+            animation-delay: 0.71s;
+        }
+
+        .info-item:nth-child(4) {
+            animation-delay: 0.84s;
         }
 
         .info-title {
@@ -105,27 +265,23 @@
             font-weight: 600;
             margin-top: 40px;
             color: #334155;
-        }
-
-        .profile-right {
-            width: clamp(200px, 30vw, 280px);
-            height: clamp(260px, 40vw, 370px);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(10, 73, 157, 0.15);
-        }
-
-        .profile-right img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .account-section {
-            margin: 0 auto 80px;
-            padding: 0 20px;
             opacity: 0;
-            animation: fadeInUp 0.8s ease forwards 0.5s;
+            transform: translateY(20px);
+            animation: fadeInUp 0.75s ease forwards;
+            animation-delay: 0.95s;
+            transition: transform 0.25s ease;
+        }
+
+        .big-text:hover {
+            transform: scale(1.05);
+        }
+
+        /* ========== 第二页：账号 ========== */
+        .account-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .section-title {
@@ -134,6 +290,9 @@
             text-align: center;
             margin-bottom: 40px;
             color: #0a499d;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.7s ease forwards;
         }
 
         .grid-box {
@@ -152,14 +311,38 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.35s cubic-bezier(0.2, 0, 0.2, 1);
             text-decoration: none;
             color: #1e293b;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.65s ease forwards;
+        }
+
+        .grid-item:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .grid-item:nth-child(2) {
+            animation-delay: 0.35s;
+        }
+
+        .grid-item:nth-child(3) {
+            animation-delay: 0.5s;
+        }
+
+        .grid-item:nth-child(4) {
+            animation-delay: 0.65s;
         }
 
         .grid-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(10, 73, 157, 0.12);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 14px 32px rgba(10, 73, 157, 0.18);
+            border-color: #0a499d44;
+        }
+
+        .grid-item:active {
+            transform: translateY(-2px) scale(0.98);
         }
 
         .grid-item img {
@@ -168,6 +351,11 @@
             border-radius: 12px;
             margin-bottom: 16px;
             object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .grid-item:hover img {
+            transform: scale(1.08);
         }
 
         .grid-item h3 {
@@ -176,11 +364,12 @@
             color: #0a499d;
         }
 
+        /* ========== 第三页：留言 ========== */
         .whisper-section {
-            margin: 0 auto 100px;
-            padding: 0 20px;
-            opacity: 0;
-            animation: fadeInUp 0.8s ease forwards 0.6s;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .whisper-btn {
@@ -196,88 +385,230 @@
             text-decoration: none;
             font-size: clamp(18px, 3vw, 24px);
             font-weight: 600;
-            margin: 0 auto;
-            transition: all 0.3s ease;
+            margin: 40px auto 0;
+            transition: all 0.35s cubic-bezier(0.2, 0, 0.2, 1);
             box-shadow: 0 8px 24px rgba(10, 73, 157, 0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards 0.3s;
         }
 
         .whisper-btn:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px) scale(1.03);
             background: #083a7f;
+            box-shadow: 0 12px 36px rgba(10, 73, 157, 0.3);
         }
 
+        .whisper-btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        /* ========== 动画 ========== */
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-45px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(45px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* ========== 移动端 ========== */
         @media (max-width: 768px) {
             .profile-section {
                 flex-direction: column;
                 text-align: center;
+                padding-top: 8vh;
             }
+
             .info-item {
                 justify-content: center;
             }
+
             .grid-box {
                 grid-template-columns: 1fr;
+            }
+
+            .splash-en {
+                white-space: normal;
+                max-width: 90vw;
+            }
+
+            .footer-en {
+                white-space: normal;
+                max-width: 92%;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="profile-section container">
-    <div class="profile-left">
-        <div class="name-en">Ding Haorui</div>
-        <div class="name-cn">丁浩睿</div>
-
-        <div class="info-item">
-            <div class="info-title">出生日期</div>
-            <div class="info-content highlight">和我同一天</div>
+<!-- 开场屏风 -->
+<div class="screen-splash" id="splash">
+    <div class="splash-center">
+        <div class="splash-domain" id="domain">haorui.xyz</div>
+        <div class="splash-proverb" id="proverbWrap">
+            <div class="splash-cn" id="cnText">相逢有时，来日方长。</div>
+            <div class="splash-en" id="enText">We meet for a reason, and there is always tomorrow.</div>
         </div>
-        <div class="info-item">
-            <div class="info-title">年龄</div>
-            <div class="info-content highlight">和我一样大</div>
-        </div>
-        <div class="info-item">
-            <div class="info-title">住址</div>
-            <div class="info-content highlight">我家</div>
-        </div>
-        <div class="info-item">
-            <div class="info-title">单位</div>
-            <div class="info-content highlight">河南大学附属中学</div>
-        </div>
-
-        <div class="big-text">好像确实没有什么可以写的😂</div>
-    </div>
-
-    <div class="profile-right">
-        <img src="avatar.jpg" alt="头像">
     </div>
 </div>
 
-<div class="account-section container">
-    <div class="section-title">我的账号</div>
-    <div class="grid-box">
-        <a href="messaging.html" class="grid-item">
-            <img src="messaging.png" alt="通讯">
-            <h3>通讯</h3>
-        </a>
-        <a href="games.html" class="grid-item">
-            <img src="games.png" alt="游戏">
-            <h3>游戏</h3>
-        </a>
-        <a href="social.html" class="grid-item">
-            <img src="social.png" alt="社交">
-            <h3>社交</h3>
-        </a>
-        <a href="opensource.html" class="grid-item">
-            <img src="opensource.png" alt="开源平台">
-            <h3>开源平台</h3>
-        </a>
+<!-- 全局底部英文 -->
+<div class="footer-en" id="footerEn">We meet for a reason, and there is always tomorrow.</div>
+
+<div class="scroll-wrapper">
+    <!-- Page1：个人资料 -->
+    <div class="page">
+        <div class="profile-section container">
+            <div class="profile-left">
+                <div class="name-en">Ding Haorui</div>
+                <div class="name-cn">丁浩睿</div>
+                <div class="info-item">
+                    <div class="info-title">出生日期</div>
+                    <div class="info-content highlight">和我同一天</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-title">年龄</div>
+                    <div class="info-content highlight">和我一样大</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-title">住址</div>
+                    <div class="info-content highlight">我家</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-title">单位</div>
+                    <div class="info-content highlight">河南大学附属中学</div>
+                </div>
+                <div class="big-text">好像确实没有什么可以写的😂</div>
+            </div>
+            <div class="profile-right">
+                <img src="avatar.jpg" alt="头像">
+            </div>
+        </div>
+    </div>
+
+    <!-- Page2：账号 -->
+    <div class="page">
+        <div class="account-section container">
+            <div class="section-title">我的账号</div>
+            <div class="grid-box">
+                <a href="messaging.html" class="grid-item">
+                    <img src="messaging.png" alt="通讯">
+                    <h3>通讯</h3>
+                </a>
+                <a href="games.html" class="grid-item">
+                    <img src="games.png" alt="游戏">
+                    <h3>游戏</h3>
+                </a>
+                <a href="social.html" class="grid-item">
+                    <img src="social.png" alt="社交">
+                    <h3>社交</h3>
+                </a>
+                <a href="opensource.html" class="grid-item">
+                    <img src="opensource.png" alt="开源平台">
+                    <h3>开源平台</h3>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page3：留言 -->
+    <div class="page">
+        <div class="whisper-section container">
+            <div class="section-title">为我留言</div>
+            <a href="whisper.html" class="whisper-btn">💬 说悄悄话给我</a>
+        </div>
     </div>
 </div>
 
-<div class="whisper-section container">
-    <div class="section-title">为我留言</div>
-    <a href="whisper.html" class="whisper-btn">💬 说悄悄话给我</a>
-</div>
+<script>
+const splash = document.getElementById('splash');
+const domain = document.getElementById('domain');
+const proverbWrap = document.getElementById('proverbWrap');
+const cnText = document.getElementById('cnText');
+const enText = document.getElementById('enText');
+const footerEn = document.getElementById('footerEn');
+
+window.addEventListener('load', async () => {
+    // 1. 显示网址
+    await sleep(400);
+    domain.classList.add('show');
+
+    // 2. 网址消失，原位置显示中英谚语
+    await sleep(1400);
+    domain.classList.remove('show');
+    proverbWrap.classList.add('show');
+
+    // 3. 用户阅读时间
+    await sleep(2000);
+
+    // 4. 中英一起退场
+    proverbWrap.classList.add('splash-fade-out');
+
+    // 5. 蓝色背景更快过渡到白色
+    await sleep(550);
+    splash.classList.add('bg-fade');
+
+    // 6. 等待背景过渡完成后，屏风消失，底部英文从下方进入
+    await sleep(550);
+    splash.style.pointerEvents = 'none';
+    footerEn.classList.add('active');
+
+    setTimeout(() => {
+        splash.style.display = 'none';
+    }, 300);
+});
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// 阻尼翻页滚动
+const wrapper = document.querySelector('.scroll-wrapper');
+let isScrolling = false;
+
+wrapper.addEventListener('wheel', (e) => {
+    e.preventDefault();
+
+    if (isScrolling) return;
+    isScrolling = true;
+
+    const delta = e.deltaY > 0 ? 1 : -1;
+    wrapper.scrollBy({
+        top: delta * window.innerHeight,
+        behavior: 'smooth'
+    });
+
+    setTimeout(() => {
+        isScrolling = false;
+    }, 900);
+}, { passive: false });
+</script>
 
 </body>
 </html>
