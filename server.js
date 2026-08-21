@@ -9,9 +9,13 @@ const app = express();
 app.use(cors({ origin: ["https://haorui.xyz", "http://localhost:3000"] }));
 app.use(express.json({ limit: "10mb" }));
 
-// ========== 数据存储层 ==========
+// ========== 数据存储层（多频道隔离） ==========
 // 优先使用 Vercel KV（Redis），Vercel 部署时数据持久化；
 // 未配置 KV 环境变量时降级到本地文件（仅本地开发可用）。
+//
+// 频道隔离规则：
+//   默认频道 (default / 不传) → KV key "whispers", 文件 whispers.json（兼容原有数据）
+//   命名频道 (如 mahong)      → KV key "whispers:mahong", 文件 whispers-mahong.json
 
 let kvStatus = null; // null=未检测, true=可用, false=不可用
 
@@ -25,11 +29,22 @@ async function getKV() {
   return null;
 }
 
-const DATA_FILE = path.join(__dirname, "whispers.json");
-const KV_KEY = "whispers";
+// 根据频道返回 KV key（默认频道兼容旧 key "whispers"）
+function getKVKey(channel) {
+  if (!channel || channel === 'default') return 'whispers';
+  return `whispers:${channel}`;
+}
 
-// 读取所有留言
-async function readWhispers() {
+// 根据频道返回本地数据文件路径（默认频道兼容旧文件 whispers.json）
+function getDataFile(channel) {
+  if (!channel || channel === 'default') return path.join(__dirname, "whispers.json");
+  return path.join(__dirname, `whispers-${channel}.json`);
+}
+
+// 读取指定频道的所有留言
+async function readWhispers(channel) {
+  const KV_KEY = getKVKey(channel);
+  const DATA_FILE = getDataFile(channel);
   const store = await getKV();
   if (store) {
     const data = await store.get(KV_KEY);
@@ -44,8 +59,10 @@ async function readWhispers() {
   }
 }
 
-// 写入留言
-async function writeWhispers(list) {
+// 写入指定频道的留言
+async function writeWhispers(channel, list) {
+  const KV_KEY = getKVKey(channel);
+  const DATA_FILE = getDataFile(channel);
   const store = await getKV();
   if (store) {
     await store.set(KV_KEY, list);
@@ -55,11 +72,11 @@ async function writeWhispers(list) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), "utf8");
 }
 
-// 本地降级模式：首次运行自动创建空文件
+// 本地降级模式：首次运行自动创建默认频道空文件
 (async () => {
   const store = await getKV();
-  if (!store && !fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, "[]", "utf8");
+  if (!store && !fs.existsSync(getDataFile('default'))) {
+    fs.writeFileSync(getDataFile('default'), "[]", "utf8");
   }
 })();
 
@@ -105,17 +122,24 @@ async function uploadToGitHub(base64Data, filename) {
 
 // ========== API 接口 ==========
 
-// 【接口 1】获取所有悄悄话（给 view-whispers.html 用）
+// 【接口 1】获取指定频道的悄悄话
+//   GET /api/whispers?channel=mahong   （不传 channel 则为默认频道，兼容旧版）
 app.get("/api/whispers", async (req, res) => {
-  const list = await readWhispers();
+  const channel = req.query.channel || 'default';
+  const list = await readWhispers(channel);
   res.json(list);
 });
 
-// 【接口 2】提交新悄悄话（给 whisper.html 用）
+// 【接口 2】提交新悄悄话到指定频道
+//   POST /api/whispers  body 中带 channel 字段（如 "mahong"），不传则为默认频道
 app.post("/api/whispers", async (req, res) => {
   try {
-    const list = await readWhispers();
+    const channel = req.body.channel || req.query.channel || 'default';
+    const list = await readWhispers(channel);
     const newMsg = req.body;
+
+    // 不把 channel 字段存进留言数据
+    delete newMsg.channel;
 
     if (!newMsg.time) {
       newMsg.time = new Date().toLocaleString("zh-CN");
@@ -129,7 +153,7 @@ app.post("/api/whispers", async (req, res) => {
     }
 
     list.push(newMsg);
-    await writeWhispers(list);
+    await writeWhispers(channel, list);
     res.json({ success: true });
   } catch (e) {
     console.error("写入留言失败:", e);
@@ -138,6 +162,7 @@ app.post("/api/whispers", async (req, res) => {
 });
 
 // 【接口 3】图片上传（前端压缩后传 base64，后端转存到 GitHub 图床）
+// 所有频道共用同一个图床，图片本身不涉及隐私隔离
 app.post("/api/upload", async (req, res) => {
   try {
     const { image, filename } = req.body;
