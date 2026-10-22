@@ -123,6 +123,7 @@
             z-index: 10;
             white-space: nowrap;
             text-align: center;
+            pointer-events: none;
             transition: all 0.85s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
@@ -441,11 +442,13 @@
 
         /* ========== 移动端 ========== */
         @media (max-width: 768px) {
-            /* 触屏设备关闭整页吸附滚动，恢复自由滚动（避免滑动"飘"到下一页） */
+            /* 触屏设备关闭整页吸附滚动，恢复自由滚动（避免滑动"飘"到下一页），滚动更跟手 */
             .scroll-wrapper {
                 scroll-snap-type: none;
                 scroll-behavior: auto;
                 overscroll-behavior-y: contain;
+                -webkit-overflow-scrolling: touch;
+                touch-action: pan-y;
             }
 
             .page {
@@ -455,15 +458,21 @@
             .profile-section {
                 flex-direction: column;
                 text-align: center;
-                padding-top: 8vh;
+                padding-top: 5vh;
             }
 
             .info-item {
                 justify-content: center;
             }
 
+            /* 手机端账号卡片改为 2 列紧凑布局，一屏可完整放下 */
             .grid-box {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+
+            .grid-item {
+                height: clamp(130px, 40vw, 170px);
             }
 
             .splash-en {

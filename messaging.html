@@ -29,8 +29,8 @@ body {
 .app-wrap {
   padding: 20px 15px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 25px 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px 14px;
   animation: fadeIn 0.5s ease-out;
   /* 电脑端居中 */
   max-width: 1200px;
@@ -63,6 +63,11 @@ body {
   word-break: break-all;
   text-align: center;
   line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 100%;
 }
 /* 弹窗遮罩 */
 .modal {
@@ -346,11 +351,13 @@ function openPop(key){
 
   // 显示弹窗
   modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 }
 
 // 关闭弹窗
 function closePop(){
   document.getElementById('modal').style.display = 'none';
+  document.body.style.overflow = 'auto';
 }
 
 // 点击弹窗背景关闭
