@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>社交</title>
 <style>
 * {
@@ -13,11 +13,11 @@
 }
 body {
   background: #ffffff;
-  padding-top: 60px;
+  padding-top: calc(60px + env(safe-area-inset-top));
 }
 .back-btn {
   position: fixed;
-  top: 15px;
+  top: calc(15px + env(safe-area-inset-top));
   left: 15px;
   font-size: 24px;
   color: #007aff;
@@ -79,6 +79,8 @@ body {
   background: #fff;
   width: 85%;
   max-width: 340px;
+  max-height: 86vh;
+  overflow-y: auto;
   border-radius: 20px;
   padding: 25px 20px;
   position: relative;

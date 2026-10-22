@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>丁浩睿 - 个人主页</title>
     <style>
         * {
@@ -24,6 +24,8 @@
             scroll-snap-type: y mandatory;
             scroll-behavior: smooth;
             background-color: #f8fafc;
+            /* 底部留白，避免内容被固定底部英文遮挡 */
+            padding-bottom: 90px;
         }
 
         .scroll-wrapper::-webkit-scrollbar {
@@ -112,7 +114,7 @@
         /* ========== 全局底部英文谚语 ========== */
         .footer-en {
             position: fixed;
-            bottom: 18px;
+            bottom: calc(18px + env(safe-area-inset-bottom));
             left: 50%;
             transform: translateX(-50%) translateY(24px);
             font-size: 13px;
@@ -439,6 +441,17 @@
 
         /* ========== 移动端 ========== */
         @media (max-width: 768px) {
+            /* 触屏设备关闭整页吸附滚动，恢复自由滚动（避免滑动"飘"到下一页） */
+            .scroll-wrapper {
+                scroll-snap-type: none;
+                scroll-behavior: auto;
+                overscroll-behavior-y: contain;
+            }
+
+            .page {
+                scroll-snap-align: none;
+            }
+
             .profile-section {
                 flex-direction: column;
                 text-align: center;
@@ -554,45 +567,55 @@ const cnText = document.getElementById('cnText');
 const enText = document.getElementById('enText');
 const footerEn = document.getElementById('footerEn');
 
-window.addEventListener('load', async () => {
-    // 1. 显示网址
-    await sleep(400);
-    domain.classList.add('show');
-
-    // 2. 网址消失，原位置显示中英谚语
-    await sleep(1400);
-    domain.classList.remove('show');
-    proverbWrap.classList.add('show');
-
-    // 3. 用户阅读时间
-    await sleep(2000);
-
-    // 4. 中英一起退场
-    proverbWrap.classList.add('splash-fade-out');
-
-    // 5. 蓝色背景更快过渡到白色
-    await sleep(550);
-    splash.classList.add('bg-fade');
-
-    // 6. 等待背景过渡完成后，屏风消失，底部英文从下方进入
-    await sleep(550);
-    splash.style.pointerEvents = 'none';
+// 入场动画：只在进入网站时播放一遍（返回本页/站内跳转不再重复播放）
+if (sessionStorage.getItem('splashPlayed')) {
+    splash.style.display = 'none';
     footerEn.classList.add('active');
+} else {
+    sessionStorage.setItem('splashPlayed', '1');
+    window.addEventListener('load', async () => {
+        // 1. 显示网址
+        await sleep(400);
+        domain.classList.add('show');
 
-    setTimeout(() => {
-        splash.style.display = 'none';
-    }, 300);
-});
+        // 2. 网址消失，原位置显示中英谚语
+        await sleep(1400);
+        domain.classList.remove('show');
+        proverbWrap.classList.add('show');
+
+        // 3. 用户阅读时间
+        await sleep(2000);
+
+        // 4. 中英一起退场
+        proverbWrap.classList.add('splash-fade-out');
+
+        // 5. 蓝色背景更快过渡到白色
+        await sleep(550);
+        splash.classList.add('bg-fade');
+
+        // 6. 等待背景过渡完成后，屏风消失，底部英文从下方进入
+        await sleep(550);
+        splash.style.pointerEvents = 'none';
+        footerEn.classList.add('active');
+
+        setTimeout(() => {
+            splash.style.display = 'none';
+        }, 300);
+    });
+}
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// 阻尼翻页滚动
+// 阻尼翻页滚动（仅桌面滚轮；触屏设备使用原生自由滚动）
 const wrapper = document.querySelector('.scroll-wrapper');
 let isScrolling = false;
+const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
 wrapper.addEventListener('wheel', (e) => {
+    if (isTouch) return; // 触屏设备不拦截，交由原生滚动
+
     e.preventDefault();
 
     if (isScrolling) return;
