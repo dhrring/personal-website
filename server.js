@@ -194,6 +194,11 @@ app.get("/api/diag", async (req, res) => {
   result.kvUrlSet = !!process.env.KV_REST_API_URL;
   result.kvTokenSet = !!process.env.KV_REST_API_TOKEN;
   result.githubTokenSet = !!process.env.GITHUB_TOKEN;
+  if (process.env.KV_REST_API_URL) {
+    try {
+      result.kvHost = new URL(process.env.KV_REST_API_URL).host;
+    } catch (e) { result.kvHost = 'URL解析失败'; }
+  }
   if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
     try {
       const ctrl = new AbortController();
@@ -210,6 +215,16 @@ app.get("/api/diag", async (req, res) => {
       result.kvDirectBody = (await r.text()).slice(0, 200);
     } catch (e) {
       result.kvDirectError = e.name + ': ' + e.message;
+      // 递归提取底层 cause（ENOTFOUND / ECONNREFUSED / CERT 等）
+      const causes = [];
+      let c = e.cause;
+      let depth = 0;
+      while (c && depth < 4) {
+        causes.push({ code: c.code, message: c.message, syscall: c.syscall, hostname: c.hostname });
+        c = c.cause;
+        depth++;
+      }
+      result.kvErrorCauses = causes;
     }
   }
   res.json(result);
