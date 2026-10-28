@@ -11,23 +11,40 @@ app.use(cors({ origin: ["https://haorui.xyz", "http://localhost:3000"] }));
 app.use(express.json({ limit: "30mb" }));
 
 // ========== 数据存储层（多频道隔离） ==========
-// 优先使用 Vercel KV（Redis），Vercel 部署时数据持久化；
-// 未配置 KV 环境变量时降级到本地文件（仅本地开发可用）。
+// 优先使用 Vercel KV（Upstash Redis REST）。每次调用前先做带超时的可达性探测，
+// KV 不可达（如数据库被删除导致域名 NXDOMAIN）时快速降级，避免函数挂起超时。
+// 降级文件：Vercel 上为 /tmp（临时、实例间不共享，仅兜底）；本地开发为项目目录（可持久）。
 //
 // 频道隔离规则：
 //   默认频道 (default / 不传) → KV key "whispers", 文件 whispers.json（兼容原有数据）
 //   命名频道 (如 mahong)      → KV key "whispers:mahong", 文件 whispers-mahong.json
 
-let kvStatus = null; // null=未检测, true=可用, false=不可用
+const DATA_DIR = process.env.VERCEL ? "/tmp" : __dirname;
 
-async function getKV() {
-  if (kvStatus !== null) return kvStatus ? require('@vercel/kv').kv : null;
-  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-    kvStatus = true;
-    return require('@vercel/kv').kv;
+let kvHealth = null;  // null=未探测, true=可达, false=不可达
+let kvCheckAt = 0;
+
+// 探测 KV REST 端点是否可达（带 3s 超时），结果缓存 60s
+async function checkKV() {
+  if (kvHealth !== null && Date.now() - kvCheckAt < 60000) return kvHealth;
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+    kvHealth = false;
+    kvCheckAt = Date.now();
+    return false;
   }
-  kvStatus = false;
-  return null;
+  try {
+    // 直接 fetch 端点：能拿到任何 HTTP 响应即说明 DNS 正常、主机可达
+    const u = process.env.KV_REST_API_URL.replace(/\/$/, '') + '/get/__probe__';
+    await fetch(u, {
+      headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
+      signal: AbortSignal.timeout(3000)
+    });
+    kvHealth = true;
+  } catch (e) {
+    kvHealth = false; // ENOTFOUND / 超时等
+  }
+  kvCheckAt = Date.now();
+  return kvHealth;
 }
 
 // 根据频道返回 KV key（默认频道兼容旧 key "whispers"）
@@ -36,20 +53,32 @@ function getKVKey(channel) {
   return `whispers:${channel}`;
 }
 
-// 根据频道返回本地数据文件路径（默认频道兼容旧文件 whispers.json）
+// 根据频道返回数据文件路径（默认频道兼容旧文件 whispers.json）
 function getDataFile(channel) {
-  if (!channel || channel === 'default') return path.join(__dirname, "whispers.json");
-  return path.join(__dirname, `whispers-${channel}.json`);
+  if (!channel || channel === 'default') return path.join(DATA_DIR, "whispers.json");
+  return path.join(DATA_DIR, `whispers-${channel}.json`);
+}
+
+// 带超时执行 KV 操作（双保险，防止 @vercel/kv 客户端内部重试导致挂起）
+function withKVTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`${label}超时(${ms}ms)`)), ms))
+  ]);
 }
 
 // 读取指定频道的所有留言
 async function readWhispers(channel) {
   const KV_KEY = getKVKey(channel);
   const DATA_FILE = getDataFile(channel);
-  const store = await getKV();
-  if (store) {
-    const data = await store.get(KV_KEY);
-    return data || [];
+  if (await checkKV()) {
+    try {
+      const data = await withKVTimeout(require('@vercel/kv').kv.get(KV_KEY), 5000, "KV读取");
+      return data || [];
+    } catch (e) {
+      kvHealth = false; kvCheckAt = Date.now(); // 探测外的运行期失败，重新标记
+    }
   }
   // 降级：本地文件
   try {
@@ -64,22 +93,17 @@ async function readWhispers(channel) {
 async function writeWhispers(channel, list) {
   const KV_KEY = getKVKey(channel);
   const DATA_FILE = getDataFile(channel);
-  const store = await getKV();
-  if (store) {
-    await store.set(KV_KEY, list);
-    return;
+  if (await checkKV()) {
+    try {
+      await withKVTimeout(require('@vercel/kv').kv.set(KV_KEY, list), 5000, "KV写入");
+      return;
+    } catch (e) {
+      kvHealth = false; kvCheckAt = Date.now();
+    }
   }
   // 降级：本地文件
   fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), "utf8");
 }
-
-// 本地降级模式：首次运行自动创建默认频道空文件
-(async () => {
-  const store = await getKV();
-  if (!store && !fs.existsSync(getDataFile('default'))) {
-    fs.writeFileSync(getDataFile('default'), "[]", "utf8");
-  }
-})();
 
 // ========== 文件上传到 GitHub 图床（图片 + 文档） ==========
 const GITHUB_OWNER = "dhrring";
