@@ -188,6 +188,33 @@ async function uploadToGitHub(base64Data, filename) {
 
 // ========== API 接口 ==========
 
+// 【诊断】检查 KV 连接状态（不经过 KV 客户端，直接测 REST）
+app.get("/api/diag", async (req, res) => {
+  const result = { time: new Date().toISOString() };
+  result.kvUrlSet = !!process.env.KV_REST_API_URL;
+  result.kvTokenSet = !!process.env.KV_REST_API_TOKEN;
+  result.githubTokenSet = !!process.env.GITHUB_TOKEN;
+  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 6000);
+      const start = Date.now();
+      const u = process.env.KV_REST_API_URL.replace(/\/$/, '') + '/get/whispers';
+      const r = await fetch(u, {
+        headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
+        signal: ctrl.signal
+      });
+      clearTimeout(timer);
+      result.kvDirectStatus = r.status;
+      result.kvDirectMs = Date.now() - start;
+      result.kvDirectBody = (await r.text()).slice(0, 200);
+    } catch (e) {
+      result.kvDirectError = e.name + ': ' + e.message;
+    }
+  }
+  res.json(result);
+});
+
 // 【接口 1】获取指定频道的悄悄话
 //   GET /api/whispers?channel=mahong   （不传 channel 则为默认频道，兼容旧版）
 app.get("/api/whispers", async (req, res) => {
