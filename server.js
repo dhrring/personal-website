@@ -7,7 +7,8 @@ const app = express();
 
 // 允许网站域名和本地开发访问
 app.use(cors({ origin: ["https://haorui.xyz", "http://localhost:3000"] }));
-app.use(express.json({ limit: "10mb" }));
+// 文档（PPT/PDF 等）经 base64 编码后体积增大约 1/3，放宽请求体上限
+app.use(express.json({ limit: "30mb" }));
 
 // ========== 数据存储层（多频道隔离） ==========
 // 优先使用 Vercel KV（Redis），Vercel 部署时数据持久化；
@@ -80,43 +81,108 @@ async function writeWhispers(channel, list) {
   }
 })();
 
-// ========== 图片上传到 GitHub 图床 ==========
+// ========== 文件上传到 GitHub 图床（图片 + 文档） ==========
 const GITHUB_OWNER = "dhrring";
 const GITHUB_REPO = "img-host";
 const GITHUB_BRANCH = "main";
 
-async function uploadToGitHub(base64Data, filename) {
-  const token = process.env.GITHUB_TOKEN;
-  if (!token) throw new Error("GITHUB_TOKEN 未配置");
-
-  // 按日期分目录，避免单目录文件过多
+// 生成按日期分目录的文件路径
+function buildFilePath(filename) {
   const now = new Date();
   const datePath = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
   const randomStr = Math.random().toString(36).substring(2, 8);
-  const ext = path.extname(filename) || '.jpg';
-  const baseName = path.basename(filename, ext).replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 20) || 'img';
-  const filePath = `${datePath}/${Date.now()}-${randomStr}-${baseName}${ext}`;
+  // 保留原始扩展名（图片 .jpg/.png，文档 .pdf/.docx/.pptx 等），统一转小写
+  let ext = path.extname(filename) || '.bin';
+  ext = ext.toLowerCase();
+  const baseName = path.basename(filename, ext).replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30) || 'file';
+  return `${datePath}/${Date.now()}-${randomStr}-${baseName}${ext}`;
+}
 
-  const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${filePath}`, {
-    method: 'PUT',
+async function ghFetch(url, options) {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) throw new Error("GITHUB_TOKEN 未配置");
+  return fetch(url, {
+    ...options,
     headers: {
       'Authorization': `token ${token}`,
       'Content-Type': 'application/json',
-      'User-Agent': 'personal-website'
-    },
+      'User-Agent': 'personal-website',
+      ...(options && options.headers ? options.headers : {})
+    }
+  });
+}
+
+// 通过 Git Data API（blob → tree → commit → ref）上传，单文件最大约 100MB
+// Contents API 仅支持 1MB 以内文件，无法满足文档上传需求
+async function commitFileToGitHub(filePath, base64Data, attempt = 1) {
+  const base = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}`;
+
+  // 1. 获取分支最新 commit
+  const refRes = await ghFetch(`${base}/git/ref/heads/${GITHUB_BRANCH}`);
+  if (!refRes.ok) throw new Error(`获取分支引用失败 (${refRes.status})`);
+  const refData = await refRes.json();
+  const parentCommitSha = refData.object.sha;
+
+  // 2. 获取父 commit 的 tree
+  const commitRes = await ghFetch(`${base}/git/commits/${parentCommitSha}`);
+  if (!commitRes.ok) throw new Error(`获取提交信息失败 (${commitRes.status})`);
+  const commitData = await commitRes.json();
+  const baseTreeSha = commitData.tree.sha;
+
+  // 3. 创建 blob（base64）
+  const blobRes = await ghFetch(`${base}/git/blobs`, {
+    method: 'POST',
+    body: JSON.stringify({ content: base64Data, encoding: 'base64' })
+  });
+  if (!blobRes.ok) {
+    const t = await blobRes.text();
+    throw new Error(`创建文件块失败 (${blobRes.status}): ${t.substring(0, 150)}`);
+  }
+  const blobData = await blobRes.json();
+
+  // 4. 基于原 tree 创建新 tree
+  const treeRes = await ghFetch(`${base}/git/trees`, {
+    method: 'POST',
     body: JSON.stringify({
-      message: `upload image: ${filePath}`,
-      content: base64Data,
-      branch: GITHUB_BRANCH
+      base_tree: baseTreeSha,
+      tree: [{ path: filePath, mode: '100644', type: 'blob', sha: blobData.sha }]
     })
   });
+  if (!treeRes.ok) throw new Error(`创建目录树失败 (${treeRes.status})`);
+  const treeData = await treeRes.json();
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`GitHub 上传失败 (${response.status}): ${errText.substring(0, 200)}`);
+  // 5. 创建 commit
+  const newCommitRes = await ghFetch(`${base}/git/commits`, {
+    method: 'POST',
+    body: JSON.stringify({
+      message: `upload: ${filePath}`,
+      tree: treeData.sha,
+      parents: [parentCommitSha]
+    })
+  });
+  if (!newCommitRes.ok) throw new Error(`创建提交失败 (${newCommitRes.status})`);
+  const newCommitData = await newCommitRes.json();
+
+  // 6. 更新分支引用（fast-forward）。并发冲突时有限重试
+  const updateRes = await ghFetch(`${base}/git/refs/heads/${GITHUB_BRANCH}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ sha: newCommitData.sha, force: false })
+  });
+  if (!updateRes.ok) {
+    if (attempt < 3) {
+      // 引用过期（并发上传），重新基于最新提交再走一遍
+      return commitFileToGitHub(filePath, base64Data, attempt + 1);
+    }
+    throw new Error(`更新分支引用失败 (${updateRes.status})`);
   }
+  return newCommitData.sha;
+}
 
-  // 返回 jsDelivr CDN 加速地址
+// 上传并返回 jsDelivr CDN 地址
+async function uploadToGitHub(base64Data, filename) {
+  if (!process.env.GITHUB_TOKEN) throw new Error("GITHUB_TOKEN 未配置");
+  const filePath = buildFilePath(filename);
+  await commitFileToGitHub(filePath, base64Data);
   return `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${filePath}`;
 }
 
@@ -151,6 +217,10 @@ app.post("/api/whispers", async (req, res) => {
     if (!Array.isArray(newMsg.images)) {
       newMsg.images = [];
     }
+    // 确保 files 是数组（文档附件）
+    if (!Array.isArray(newMsg.files)) {
+      newMsg.files = [];
+    }
 
     list.push(newMsg);
     await writeWhispers(channel, list);
@@ -161,20 +231,22 @@ app.post("/api/whispers", async (req, res) => {
   }
 });
 
-// 【接口 3】图片上传（前端压缩后传 base64，后端转存到 GitHub 图床）
-// 所有频道共用同一个图床，图片本身不涉及隐私隔离
+// 【接口 3】通用文件上传（图片压缩后 / 文档原始 base64，后端转存到 GitHub 图床）
+// 所有频道共用同一个图床，文件本身不涉及隐私隔离
+// 兼容字段：data（新，通用）或 image（旧，图片）
 app.post("/api/upload", async (req, res) => {
   try {
-    const { image, filename } = req.body;
-    if (!image) {
-      return res.status(400).json({ success: false, error: "缺少图片数据" });
+    const data = req.body.data || req.body.image;
+    const { filename } = req.body;
+    if (!data) {
+      return res.status(400).json({ success: false, error: "缺少文件数据" });
     }
 
-    const safeName = (filename || "image.jpg").replace(/[^a-zA-Z0-9._-]/g, '_');
-    const url = await uploadToGitHub(image, safeName);
+    const safeName = (filename || "file.bin").replace(/[^a-zA-Z0-9._-]/g, '_');
+    const url = await uploadToGitHub(data, safeName);
     res.json({ success: true, url });
   } catch (e) {
-    console.error("上传图片失败:", e);
+    console.error("上传文件失败:", e);
     res.status(500).json({ success: false, error: e.message });
   }
 });
