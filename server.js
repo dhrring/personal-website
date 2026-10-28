@@ -227,6 +227,16 @@ app.get("/api/diag", async (req, res) => {
       result.kvErrorCauses = causes;
     }
   }
+  // 对照：测试函数出站网络与 DNS 是否正常（访问 GitHub API）
+  try {
+    const cr = await fetch("https://api.github.com/zen", {
+      signal: AbortSignal.timeout(6000),
+      headers: { "User-Agent": "diag" }
+    });
+    result.controlGithubStatus = cr.status;
+  } catch (e) {
+    result.controlGithubError = e.name + ": " + e.message;
+  }
   res.json(result);
 });
 
