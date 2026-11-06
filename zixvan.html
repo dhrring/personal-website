@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>我们的故事 · Since 2022.09.01</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='8' fill='%234a80c4'/%3E%3Ccircle cx='20' cy='16' r='8' fill='%23d9b57e' fill-opacity='0.85'/%3E%3C/svg%3E">
+<style>
+/* ============ 基础变量 ============ */
+:root{
+  --bg:#0e1a2b;
+  --bg-2:#13263f;
+  --text:#eef2f7;
+  --muted:#9db2c9;
+  --gold:#d9b57e;
+  --blue:#4a80c4;
+  --line:rgba(255,255,255,.12);
+  --serif:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:var(--sans);
+  color:var(--text);
+  background:var(--bg);
+  overflow:hidden;
+}
+::selection{background:rgba(217,181,126,.35)}
+
+/* ============ 滚动容器 ============ */
+#scroller{
+  height:100vh;
+  overflow-y:auto;
+  scroll-snap-type:y mandatory;
+  scroll-behavior:smooth;
+  scrollbar-width:none;
+}
+#scroller::-webkit-scrollbar{display:none}
+.section{
+  height:100vh;
+  scroll-snap-align:start;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:7vh 6vw;
+  overflow:hidden;
+}
+
+/* ============ 装饰层：光斑 + 噪点 ============ */
+.orb{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(90px);
+  pointer-events:none;
+  opacity:.5;
+}
+.orb.o1{width:46vw;height:46vw;left:-12vw;top:-14vw;
+  background:radial-gradient(circle,rgba(74,128,196,.55),transparent 65%);
+  animation:drift1 26s ease-in-out infinite alternate;}
+.orb.o2{width:40vw;height:40vw;right:-10vw;bottom:-12vw;
+  background:radial-gradient(circle,rgba(217,181,126,.38),transparent 65%);
+  animation:drift2 32s ease-in-out infinite alternate;}
+@keyframes drift1{to{transform:translate(9vw,7vh) scale(1.15)}}
+@keyframes drift2{to{transform:translate(-8vw,-6vh) scale(1.1)}}
+.grain{
+  position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.055;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============ 顶部控制条 ============ */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:80;
+  display:flex;align-items:center;gap:14px;
+  padding:14px 20px;
+}
+.brand{
+  font-family:var(--serif);
+  font-size:15px;letter-spacing:2px;color:var(--muted);
+}
+.brand b{color:var(--gold);font-weight:600}
+#progress{
+  flex:1;height:2px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden;
+}
+#progress i{
+  display:block;height:100%;width:0%;
+  background:linear-gradient(90deg,var(--blue),var(--gold));
+}
+#playBtn{
+  width:40px;height:40px;border-radius:50%;
+  border:1px solid var(--line);background:rgba(255,255,255,.06);
+  color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .3s var(--ease),transform .3s var(--ease);
+}
+#playBtn:hover{background:rgba(255,255,255,.14);transform:scale(1.06)}
+#playBtn svg{width:15px;height:15px}
+#pauseHint{
+  position:fixed;top:64px;right:20px;z-index:80;
+  font-size:12px;color:var(--muted);
+  background:rgba(14,26,43,.7);border:1px solid var(--line);
+  padding:6px 12px;border-radius:20px;
+  opacity:0;transform:translateY(-6px);
+  transition:all .4s var(--ease);pointer-events:none;
+}
+#pauseHint.show{opacity:1;transform:translateY(0)}
+
+/* ============ 章节角标 ============ */
+.chapter-no{
+  position:absolute;top:9vh;left:6vw;
+  font-family:var(--serif);
+  font-size:13px;letter-spacing:4px;color:var(--gold);
+}
+.chapter-no::after{
+  content:"";display:block;width:34px;height:1px;background:var(--gold);
+  margin-top:10px;opacity:.7;
+}
+.chapter-name{
+  position:absolute;top:9vh;right:6vw;
+  font-size:13px;letter-spacing:3px;color:var(--muted);
+}
+
+/* ============ 首屏：天数 ============ */
+.hero-inner{text-align:center;z-index:2}
+.hero-since{
+  font-size:13px;letter-spacing:5px;color:var(--muted);
+  margin-bottom:26px;
+}
+.hero-line{
+  font-family:var(--serif);
+  font-size:clamp(22px,3.4vw,34px);
+  font-weight:500;
+  margin-bottom:18px;
+}
+.hero-days{
+  font-family:var(--serif);
+  font-size:clamp(76px,15vw,150px);
+  font-weight:700;line-height:1.05;
+  color:transparent;
+  background:linear-gradient(135deg,#f3e3c4 0%,var(--gold) 45%,#b8935c 100%);
+  -webkit-background-clip:text;background-clip:text;
+  font-variant-numeric:tabular-nums;
+}
+.hero-unit{
+  font-family:var(--serif);font-size:clamp(20px,3vw,30px);
+  color:var(--gold);margin-left:8px;
+}
+.hero-clock{
+  margin-top:30px;font-size:clamp(14px,1.8vw,17px);
+  color:var(--muted);font-variant-numeric:tabular-nums;
+  letter-spacing:1px;
+}
+.hero-clock b{color:var(--text);font-weight:600}
+.hero-tip{
+  margin-top:42px;font-size:12px;letter-spacing:3px;color:var(--muted);
+  opacity:.8;animation:pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse{50%{opacity:.35}}
+
+/* ============ 纯文字章节（序章/结尾） ============ */
+.text-block{
+  max-width:760px;text-align:center;z-index:2;
+}
+.text-block .big{
+  font-family:var(--serif);
+  font-size:clamp(26px,4.2vw,44px);
+  line-height:1.5;font-weight:600;
+  margin-bottom:26px;
+}
+.text-block .sub{
+  font-size:clamp(15px,1.9vw,18px);
+  line-height:2;color:var(--muted);
+}
+.text-block .date-chip{
+  display:inline-block;margin-bottom:30px;
+  font-family:var(--serif);font-size:15px;letter-spacing:3px;
+  color:var(--gold);border:1px solid rgba(217,181,126,.45);
+  padding:9px 22px;border-radius:30px;
+}
+.rise{opacity:0;transform:translateY(26px)}
+.section.inview .rise{
+  opacity:1;transform:translateY(0);
+  transition:opacity 1s var(--ease),transform 1s var(--ease);
+}
+.section.inview .rise.d2{transition-delay:.25s}
+.section.inview .rise.d3{transition-delay:.5s}
+
+/* ============ 图片轮播章节 ============ */
+.stage{
+  position:relative;
+  width:100%;max-width:1060px;
+  display:flex;flex-direction:column;align-items:center;
+  z-index:2;
+}
+.slide{
+  position:absolute;
+  opacity:0;
+  display:flex;flex-direction:column;align-items:center;
+  width:min(88vw,960px);
+  transition:opacity 1.3s var(--ease);
+  pointer-events:none;
+}
+.slide.active{opacity:1;pointer-events:auto;position:relative}
+.img-frame{
+  border-radius:14px;overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+  border:1px solid rgba(255,255,255,.08);
+  height:62vh;width:100%;
+  display:flex;align-items:center;justify-content:center;
+  background:#0a1422;
+}
+.img-frame img{
+  display:block;
+  max-width:100%;max-height:100%;
+  width:auto;height:auto;
+  object-fit:contain;
+}
+.slide.active .img-frame img{animation:kenburns 7s ease-out both}
+@keyframes kenburns{
+  from{transform:scale(1.06) translate(-1.2%,-1%);}
+  to{transform:scale(1.16) translate(1.4%,1.6%);}
+}
+.slide-caption{
+  margin-top:24px;text-align:center;
+  max-width:640px;
+}
+.slide-caption .cap-title{
+  font-family:var(--serif);
+  font-size:clamp(17px,2.2vw,22px);
+  font-weight:600;margin-bottom:8px;
+  color:var(--text);
+}
+.slide-caption .cap-desc{
+  font-size:clamp(13.5px,1.6vw,15.5px);
+  line-height:1.85;color:var(--muted);
+}
+.dots{
+  display:flex;gap:8px;margin-top:26px;
+}
+.dots i{
+  width:7px;height:7px;border-radius:50%;
+  background:rgba(255,255,255,.22);
+  transition:all .4s var(--ease);
+}
+.dots i.on{background:var(--gold);transform:scale(1.3)}
+
+/* ============ 结尾 ============ */
+.end-days{
+  font-family:var(--serif);
+  font-size:clamp(40px,7vw,72px);
+  color:var(--gold);font-weight:700;
+  font-variant-numeric:tabular-nums;
+  margin:8px 0 22px;
+}
+
+/* ============ 响应式 ============ */
+@media (max-width:768px){
+  .section{padding:9vh 5vw}
+  .chapter-no{top:7.5vh;left:5vw}
+  .chapter-name{top:7.5vh;right:5vw}
+  .img-frame{height:54vh}
+  .slide{width:92vw}
+  .slide-caption{margin-top:18px}
+  .brand{display:none}
+  .hero-tip{margin-top:30px}
+}
+/* ============ 低动效兜底 ============ */
+@media (prefers-reduced-motion:reduce){
+  .orb,.hero-tip,.slide.active .img-frame img{animation:none}
+  #scroller{scroll-behavior:auto;scroll-snap-type:none}
+  .rise{opacity:1;transform:none;transition:none}
+}
+</style>
+</head>
+<body>
+<!-- ===== 顶部控制条 ===== -->
+<div class="topbar">
+  <div class="brand">HAORUI <b>&times;</b> ZIXVAN</div>
+  <div id="progress"><i id="progressBar"></i></div>
+  <button id="playBtn" aria-label="暂停或播放">
+    <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+    <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M8 5.5v13a1 1 0 0 0 1.52.86l10-6.5a1 1 0 0 0 0-1.72l-10-6.5A1 1 0 0 0 8 5.5z"/></svg>
+  </button>
+</div>
+<div id="pauseHint">已手动暂停，稍后自动恢复</div>
+
+<!-- ===== 装饰层 ===== -->
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+<div class="grain"></div>
+
+<div id="scroller">
+
+<!-- ===== 首屏：实时天数 ===== -->
+<section class="section invview" id="sec-hero">
+  <div class="hero-inner">
+    <div class="hero-since">SINCE&nbsp;&nbsp;2022.09.01</div>
+    <div class="hero-line">我们在一起，已经</div>
+    <div>
+      <span class="hero-days" id="dayCount">0</span><span class="hero-unit">天</span>
+    </div>
+    <div class="hero-clock" id="clockText">
+      也就是 <b id="hourCount">0</b> 小时 <b id="minCount">0</b> 分 <b id="secCount">0</b> 秒
+    </div>
+    <div class="hero-tip">自动播放中 · 无需手动翻页</div>
+  </div>
+</section>
+
+<!-- ===== 序章 ===== -->
+<section class="section" id="sec-prologue">
+  <div class="chapter-no">序章</div>
+  <div class="chapter-name">PROLOGUE</div>
+  <div class="text-block">
+    <div class="date-chip rise">2022 年 9 月 1 日</div>
+    <div class="big rise d2">开学第一天，人群那么吵，我却先听见了你的声音。</div>
+    <div class="sub rise d3">那时候我们都还不知道，这个随口打招呼的人，会在后来的日子里，陪我走过一个又一个学期。</div>
+  </div>
+</section>
+
+<!-- ===== 第一章：关于我（a 组） ===== -->
+<section class="section gallery">
+  <div class="chapter-no">第一章</div>
+  <div class="chapter-name">ABOUT&nbsp;ME</div>
+  <div class="stage">
+    <div class="slide active">
+      <div class="img-frame"><img src="a1.jpg" alt="日常的我"></div>
+      <div class="slide-caption"><div class="cap-title">日常的我</div><div class="cap-desc">黑T恤、抱臂、表情有点严肃，其实只是不太会笑。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="a2.jpg" alt="橘子洲头"></div>
+      <div class="slide-caption"><div class="cap-title">橘子洲头</div><div class="cap-desc">风很大，小国旗被吹得猎猎响，身后是湘江和一整个夏天。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="a3.jpg" alt="展馆里"></div>
+      <div class="slide-caption"><div class="cap-title">展馆里</div><div class="cap-desc">一首《渔家傲》读了很久，隔着一千年的秋天，忽然懂了什么叫乡愁。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="a5.jpg" alt="教室日常"></div>
+      <div class="slide-caption"><div class="cap-title">教室日常</div><div class="cap-desc">比个耶，桌上的《数学一本通》还停在没做完的那一页。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="a6.jpg" alt="湖边三连"></div>
+      <div class="slide-caption"><div class="cap-title">湖边三连</div><div class="cap-desc">鬼脸、张嘴、假笑，不正经的证据一次性集齐。</div></div>
+    </div>
+  </div>
+  <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+</section>
+
+<!-- ===== 第二章：关于你（b 组） ===== -->
+<section class="section gallery">
+  <div class="chapter-no">第二章</div>
+  <div class="chapter-name">ABOUT&nbsp;YOU</div>
+  <div class="stage">
+    <div class="slide active">
+      <div class="img-frame"><img src="b1.jpg" alt="商场里"></div>
+      <div class="slide-caption"><div class="cap-title">商场里</div><div class="cap-desc">白T恤，头发有点乱，抬头的瞬间被镜头抓住。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="b2.jpg" alt="汉服"></div>
+      <div class="slide-caption"><div class="cap-title">汉服</div><div class="cap-desc">银冠步摇，轻纱广袖，你站在那里，像从古画里走出来的人。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="b3.jpg" alt="老街黄昏"></div>
+      <div class="slide-caption"><div class="cap-title">老街黄昏</div><div class="cap-desc">背着包走在青砖巷里，人群在身后，灯一盏盏亮起来。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="b4.jpg" alt="取景框"></div>
+      <div class="slide-caption"><div class="cap-title">取景框</div><div class="cap-desc">九宫格刚好框住你，连快门都还没来得及按。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="b5.jpg" alt="午后犯困"></div>
+      <div class="slide-caption"><div class="cap-title">午后犯困</div><div class="cap-desc">趴在卷子上，困意总是比解题思路先到一步。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="b6.jpg" alt="晴天"></div>
+      <div class="slide-caption"><div class="cap-title">晴天</div><div class="cap-desc">天蓝得像一整块宝石，你站在云下面，头发被风吹起来。</div></div>
+    </div>
+  </div>
+  <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+</section>
+
+<!-- ===== 第三章：我们（c 组，按时间顺序） ===== -->
+<section class="section gallery">
+  <div class="chapter-no">第三章</div>
+  <div class="chapter-name">ABOUT&nbsp;US</div>
+  <div class="stage">
+    <div class="slide active">
+      <div class="img-frame"><img src="c1.jpg" alt="第一张合照"></div>
+      <div class="slide-caption"><div class="cap-title">第一张合照</div><div class="cap-desc">2025 年 6 月 24 日，校服、阳光、还有凑过来的两个脑袋。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="c2.jpg" alt="教室里"></div>
+      <div class="slide-caption"><div class="cap-title">教室里</div><div class="cap-desc">你比了个耶，我在旁边笑，黑板上的字还没擦。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="c3.jpg" alt="下晚自习的路"></div>
+      <div class="slide-caption"><div class="cap-title">下晚自习的路</div><div class="cap-desc">夜里光线很暗，路灯把我们的影子拉得很长。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="c4.jpg" alt="小小车厢"></div>
+      <div class="slide-caption"><div class="cap-title">小小车厢</div><div class="cap-desc">两个头挨在一起，比耶的手有点晃，画面却很稳。</div></div>
+    </div>
+    <div class="slide">
+      <div class="img-frame"><img src="c5.jpg" alt="车窗反光"></div>
+      <div class="slide-caption"><div class="cap-title">车窗反光</div><div class="cap-desc">你在镜子里，我在镜子外，同一个夜晚装下了两个我们。</div></div>
+    </div>
+  </div>
+  <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+</section>
+
+<!-- ===== 结尾 ===== -->
+<section class="section" id="sec-end">
+  <div class="chapter-no">尾声</div>
+  <div class="chapter-name">TO&nbsp;BE&nbsp;CONTINUED</div>
+  <div class="text-block">
+    <div class="big rise">到今天，我们已经一起走过</div>
+    <div class="end-days rise d2" id="endDays">0 天</div>
+    <div class="sub rise d3">这不是终点，是下一段故事的开头。来日方长，我们慢慢走——以后还要一起拍很多很多张照片。</div>
+  </div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+  /* ============ 常量与状态 ============ */
+  var START = new Date(2022, 8, 1, 0, 0, 0);   // 2022-09-01 本地零点
+  var SLIDE_MS = 4500;
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var scroller = document.getElementById("scroller");
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".section"));
+  var progressBar = document.getElementById("progressBar");
+  var playBtn = document.getElementById("playBtn");
+  var iconPlay = document.getElementById("iconPlay");
+  var iconPause = document.getElementById("iconPause");
+  var pauseHint = document.getElementById("pauseHint");
+
+  function durationOf(sec){
+    if(sec.classList.contains("gallery")) return sec.querySelectorAll(".slide").length * SLIDE_MS;
+    if(sec.id === "sec-hero") return 9000;
+    if(sec.id === "sec-prologue") return 7500;
+    return 8000;
+  }
+  var durations = sections.map(durationOf);
+
+  var state = {
+    idx: 0, elapsed: 0,
+    auto: !reduceMotion,          // 播放总开关
+    manualUntil: 0,               // 手动干预暂停截止时间戳
+    userScrolling: false,
+    tweenDone: reduceMotion,
+    iconPaused: null
+  };
+
+  /* ============ 相识天数实时计算 ============ */
+  var dayEl = document.getElementById("dayCount");
+  var hourEl = document.getElementById("hourCount");
+  var minEl = document.getElementById("minCount");
+  var secEl = document.getElementById("secCount");
+  var endEl = document.getElementById("endDays");
+
+  function metrics(){
+    var diff = Date.now() - START.getTime();
+    return {
+      diff: diff,
+      days: Math.floor(diff / 86400000),
+      hours: Math.floor(diff / 3600000),
+      mins: Math.floor(diff / 60000) % 60,
+      secs: Math.floor(diff / 1000) % 60
+    };
+  }
+  function pad(n){ return String(n).padStart(2, "0"); }
+  function renderClock(m){
+    hourEl.textContent = m.hours.toLocaleString();
+    minEl.textContent = pad(m.mins);
+    secEl.textContent = pad(m.secs);
+    endEl.textContent = m.days.toLocaleString() + " 天";
+  }
+
+  /* 首屏大数字开场滚动（本页主题就是时间的增长） */
+  var targetDays = metrics().days;
+  if(reduceMotion){
+    dayEl.textContent = targetDays.toLocaleString();
+  }else{
+    var t0 = performance.now(), TW = 1500;
+    (function tween(now){
+      var p = Math.min(1, (now - t0) / TW);
+      var eased = 1 - Math.pow(1 - p, 3);
+      dayEl.textContent = Math.round(targetDays * eased).toLocaleString();
+      if(p < 1) requestAnimationFrame(tween);
+      else state.tweenDone = true;
+    })(t0);
+  }
+  renderClock(metrics());
+  setInterval(function(){
+    var m = metrics();
+    renderClock(m);
+    if(state.tweenDone) dayEl.textContent = m.days.toLocaleString();
+  }, 1000);
+
+  /* ============ 画廊切换 ============ */
+  function showSlide(sec, slideIdx){
+    var slides = sec.querySelectorAll(".slide");
+    var dots = sec.querySelectorAll(".dots i");
+    Array.prototype.forEach.call(slides, function(s, i){
+      s.classList.toggle("active", i === slideIdx);
+    });
+    Array.prototype.forEach.call(dots, function(d, i){
+      d.classList.toggle("on", i === slideIdx);
+    });
+  }
+
+  /* ============ 章节跳转 ============ */
+  function goSection(i){
+    state.idx = i;
+    state.elapsed = 0;
+    sections[i].classList.add("inview");
+    var top = sections[i].offsetTop;
+    if(Math.abs(scroller.scrollTop - top) > 5){
+      scroller.scrollTo({ top: top, behavior: reduceMotion ? "auto" : "smooth" });
+    }
+    if(sections[i].classList.contains("gallery")) showSlide(sections[i], 0);
+    progressBar.style.width = "0%";
+  }
+
+  /* ============ 图标与提示 ============ */
+  function setIcon(paused){
+    if(state.iconPaused === paused) return;
+    state.iconPaused = paused;
+    iconPlay.style.display = paused ? "block" : "none";
+    iconPause.style.display = paused ? "none" : "block";
+  }
+
+  /* ============ 自动播放主时钟 ============ */
+  var last = performance.now();
+  function frame(now){
+    var dt = now - last; last = now;
+    var sec = sections[state.idx];
+    var dur = durations[state.idx];
+    var manualPaused = now < state.manualUntil;
+    var active = state.auto && !manualPaused;
+
+    if(active){
+      state.elapsed += dt;
+      if(sec.classList.contains("gallery")){
+        var n = sec.querySelectorAll(".slide").length;
+        var si = Math.min(n - 1, Math.floor(state.elapsed / SLIDE_MS));
+        var curIdx = Array.prototype.indexOf.call(
+          sec.querySelectorAll(".slide"), sec.querySelector(".slide.active"));
+        if(si !== curIdx) showSlide(sec, si);
+      }
+      if(state.elapsed >= dur) goSection((state.idx + 1) % sections.length);
+    }
+    progressBar.style.width = Math.min(100, state.elapsed / dur * 100) + "%";
+    setIcon(!state.auto || manualPaused);
+    if(!manualPaused && pauseHint.classList.contains("show")){
+      pauseHint.classList.remove("show");
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ============ 手动干预：暂停 12 秒并同步章节 ============ */
+  var scrollTimer = null;
+  function onManual(){
+    if(state.auto){
+      state.manualUntil = performance.now() + 12000;
+      pauseHint.classList.add("show");
+    }
+    state.userScrolling = true;
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function(){ state.userScrolling = false; }, 200);
+  }
+  scroller.addEventListener("wheel", onManual, { passive: true });
+  scroller.addEventListener("touchstart", onManual, { passive: true });
+  window.addEventListener("keydown", function(e){
+    if(["ArrowDown","ArrowUp","PageDown","PageUp"," "].indexOf(e.key) > -1) onManual();
+  });
+
+  scroller.addEventListener("scroll", function(){
+    if(!state.userScrolling) return;
+    var st = scroller.scrollTop, best = 0, bestDist = Infinity;
+    sections.forEach(function(s, i){
+      var d = Math.abs(s.offsetTop - st);
+      if(d < bestDist){ bestDist = d; best = i; }
+    });
+    if(best !== state.idx){
+      state.idx = best;
+      state.elapsed = 0;
+      sections[best].classList.add("inview");
+      progressBar.style.width = "0%";
+    }
+  });
+
+  /* ============ 播放/暂停按钮 ============ */
+  playBtn.addEventListener("click", function(){
+    state.auto = !state.auto;
+    if(state.auto){
+      state.manualUntil = 0;
+      pauseHint.classList.remove("show");
+    }
+  });
+
+  if(reduceMotion) setIcon(true);
+  requestAnimationFrame(frame);
+})();
+</script>
+</div>
+</body>
+</html>
