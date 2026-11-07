@@ -4,421 +4,280 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>我们的故事 · Since 2022.09.01</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='7' width='22' height='21' rx='4' fill='%234a90d9'/%3E%3Crect x='5' y='7' width='22' height='7' rx='4' fill='%238fc1f0'/%3E%3Ccircle cx='16' cy='20' r='4' fill='white'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='6' width='22' height='22' rx='5' fill='%230a499d'/%3E%3Ccircle cx='16' cy='17' r='6' fill='%237db8ff'/%3E%3C/svg%3E">
 <style>
-/* ============ 小清新蓝色系变量 ============ */
+/* ============ 现代深蓝变量 ============ */
 :root{
-  --bg1:#e4f0fc; --bg2:#f6faff; --bg3:#eaf4ff;
-  --blue:#4a90d9; --blue-deep:#357abd; --blue-soft:#8fc1f0; --blue-pale:#eaf3fd;
-  --ink:#2c527e; --muted:#7d97b3; --card:#ffffff; --line:#dbe8f7;
-  --shadow:0 22px 55px rgba(53,122,189,.18);
-  --serif:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+  --navy:#0a499d; --navy-2:#0f5cc2; --navy-deep:#07356f;
+  --sky:#7db8ff; --white:#fff;
+  --pop:cubic-bezier(.16,1.12,.3,1);
+  --out:cubic-bezier(.22,1,.36,1);
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-  --ease:cubic-bezier(.22,1,.36,1);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%}
-body{
-  font-family:var(--sans); color:var(--ink);
-  background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 48%,var(--bg3) 100%);
-  overflow:hidden;
-}
-::selection{background:rgba(74,144,217,.25)}
+html,body{height:100%;background:var(--navy)}
+body{font-family:var(--sans);color:var(--white);overflow:hidden;-webkit-font-smoothing:antialiased}
 
-/* ============ 背景柔和光斑 ============ */
-.bgblob{position:fixed;border-radius:50%;filter:blur(70px);pointer-events:none;z-index:0}
-.bgblob.b1{width:44vw;height:44vw;left:-12vw;top:-12vw;
-  background:radial-gradient(circle,rgba(143,193,240,.55),transparent 68%);
-  animation:float1 24s ease-in-out infinite alternate}
-.bgblob.b2{width:38vw;height:38vw;right:-10vw;bottom:-10vw;
-  background:radial-gradient(circle,rgba(116,178,235,.45),transparent 68%);
-  animation:float2 28s ease-in-out infinite alternate}
-.bgblob.b3{width:26vw;height:26vw;right:14vw;top:8vh;
-  background:radial-gradient(circle,rgba(200,226,250,.5),transparent 70%);
-  animation:float1 32s ease-in-out infinite alternate}
-@keyframes float1{to{transform:translate(7vw,6vh) scale(1.12)}}
-@keyframes float2{to{transform:translate(-7vw,-5vh) scale(1.1)}}
+/* ============ 首屏深蓝屏风 ============ */
+.splash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;
+  background:radial-gradient(125% 125% at 50% 8%,var(--navy-2),var(--navy) 46%,var(--navy-deep) 100%);
+  transition:opacity .6s ease,transform .6s ease}
+.splash.out{opacity:0;transform:scale(1.05);pointer-events:none}
+.splash .rise{opacity:0;transform:translateY(18px)}
+.splash .r1{animation:rise .7s var(--out) .2s forwards}
+.splash .r2{animation:rise .7s var(--out) .44s forwards}
+.splash .r3{animation:rise .7s var(--out) .6s forwards}
+.splash .r4{animation:rise .7s var(--out) .95s forwards}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+.since{font-size:13px;letter-spacing:5px;color:var(--sky);margin-bottom:22px}
+.splash-lead{font-size:clamp(16px,4.4vw,22px);font-weight:500;letter-spacing:2px;color:rgba(255,255,255,.86)}
+.splash-days{display:flex;align-items:baseline;justify-content:center;margin-top:8px}
+.splash-days .num{font-size:clamp(96px,27vw,208px);font-weight:800;line-height:1;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.splash-days .unit{font-size:clamp(26px,7vw,50px);font-weight:700;margin-left:10px;color:var(--sky)}
+.splash-load{position:absolute;left:0;right:0;bottom:calc(32px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;align-items:center;gap:10px}
+.loadbar{width:min(62vw,260px);height:4px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden}
+.loadbar i{display:block;height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,var(--sky),#fff);transition:width .3s ease}
+.loadtxt{font-size:12px;letter-spacing:2px;color:rgba(255,255,255,.72)}
 
-/* ============ 顶部控制条 ============ */
-.topbar{position:fixed;top:0;left:0;right:0;z-index:90;
-  display:flex;align-items:center;gap:13px;padding:15px 20px}
-.brand{font-family:var(--serif);font-size:15px;letter-spacing:2px;color:var(--blue-deep)}
-.brand span{color:var(--muted);font-weight:400}
-#progress{flex:1;height:3px;background:rgba(74,144,217,.16);border-radius:3px;overflow:hidden}
-#progress i{display:block;height:100%;width:0%;
-  background:linear-gradient(90deg,var(--blue-soft),var(--blue-deep));border-radius:3px}
-#playBtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);
-  background:rgba(255,255,255,.85);color:var(--blue-deep);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);
-  transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
-#playBtn:hover{transform:scale(1.07);box-shadow:0 6px 18px rgba(74,144,217,.25)}
-#playBtn svg{width:15px;height:15px}
-#counter{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:42px;text-align:right}
-#pauseHint{position:fixed;top:64px;right:20px;z-index:90;font-size:12px;color:var(--blue-deep);
-  background:rgba(255,255,255,.9);border:1px solid var(--line);padding:6px 13px;border-radius:20px;
-  opacity:0;transform:translateY(-6px);transition:all .4s var(--ease);pointer-events:none}
-#pauseHint.show{opacity:1;transform:translateY(0)}
+/* ============ 播放舞台 ============ */
+.reel{position:fixed;inset:0;background:var(--navy)}
+.shot,.ending{position:absolute;inset:0;overflow:hidden;
+  opacity:0;transform:translateY(100%) scale(1.06);will-change:transform,opacity}
+.shot.active,.ending.active{opacity:1;transform:translateY(0) scale(1);
+  transition:transform .62s var(--pop),opacity .4s ease}
+.shot.leave,.ending.leave{opacity:0;transform:translateY(-42%) scale(.95);
+  transition:transform .52s cubic-bezier(.5,0,.8,0),opacity .42s ease}
 
-/* ============ 3D 翻页舞台 ============ */
-.stage-wrap{position:fixed;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;
-  perspective:1700px;padding:84px 16px 26px}
-#stage{position:relative;width:min(92vw,680px);height:100%;display:flex;align-items:center;justify-content:center}
-.card{position:absolute;width:100%;background:var(--card);border-radius:26px;box-shadow:var(--shadow);
-  border:1px solid var(--line);padding:24px 24px 28px;
-  opacity:0;pointer-events:none;backface-visibility:hidden;transform-style:preserve-3d}
-.card.active{pointer-events:auto;animation:cardIn .78s var(--ease) both}
-.card.leaving{animation:cardOut .52s ease-in both}
-@keyframes cardIn{from{opacity:0;transform:rotateY(72deg) scale(.82)}
-  to{opacity:1;transform:rotateY(0) scale(1)}}
-@keyframes cardOut{from{opacity:1;transform:rotateY(0) scale(1)}
-  to{opacity:0;transform:rotateY(-72deg) scale(.92)}}
+/* 照片 + 镜头运动 */
+.shot-img{position:absolute;inset:0;overflow:hidden}
+.shot-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transform:scale(1.14)}
+.shot.active .shot-img img{opacity:1;transition:opacity .5s ease .05s}
+.shot.active .kb-1{animation:kb1 2.5s linear .1s forwards}
+.shot.active .kb-2{animation:kb2 2.5s linear .1s forwards}
+.shot.active .kb-3{animation:kb3 2.5s linear .1s forwards}
+.shot.active .kb-4{animation:kb4 2.5s linear .1s forwards}
+.shot.active .kb-5{animation:kb5 2.5s linear .1s forwards}
+@keyframes kb1{from{transform:scale(1.14) translate(-2.2%,0)}to{transform:scale(1.26) translate(2.2%,0)}}
+@keyframes kb2{from{transform:scale(1.14) translate(2.2%,0)}to{transform:scale(1.26) translate(-2.2%,0)}}
+@keyframes kb3{from{transform:scale(1.14) translate(0,-2.2%)}to{transform:scale(1.26) translate(0,2.2%)}}
+@keyframes kb4{from{transform:scale(1.14) translate(0,2.2%)}to{transform:scale(1.26) translate(0,-2.2%)}}
+@keyframes kb5{from{transform:scale(1.12)}to{transform:scale(1.25)}}
 
-/* 章节小标签 */
-.chip{display:inline-block;font-size:12px;letter-spacing:2px;color:var(--blue-deep);
-  background:var(--blue-pale);padding:5px 15px;border-radius:20px;margin-bottom:15px}
+/* 底部标签（仅 RUI / VAN） */
+.shot-meta{position:absolute;left:0;right:0;bottom:0;
+  padding:0 26px calc(28px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;align-items:flex-start;gap:11px;
+  background:linear-gradient(to top,rgba(7,53,111,.85) 10%,rgba(7,53,111,.46) 56%,transparent)}
+.tag-line{height:3px;width:0;border-radius:3px;background:var(--sky)}
+.shot.active .tag-line{animation:linegrow .55s var(--out) .22s forwards}
+@keyframes linegrow{to{width:62px}}
+.tag{font-size:clamp(40px,12.5vw,86px);font-weight:800;letter-spacing:3px;line-height:1;
+  opacity:0;transform:translateY(26px);white-space:nowrap}
+.shot.active .tag{animation:tagin .55s var(--pop) .3s forwards}
+@keyframes tagin{to{opacity:1;transform:translateY(0)}}
 
-/* ============ 图片：凭空放大 + 缓慢推近 ============ */
-.photo{border-radius:18px;overflow:hidden;height:clamp(280px,50vh,450px);
-  background:var(--blue-pale);display:flex;align-items:center;justify-content:center}
-.photo img.story-img{display:block;width:100%;height:100%;object-fit:cover;opacity:0}
-.card.active .photo img.story-img{animation:photoPop .82s cubic-bezier(.2,.85,.3,1.12) .14s both}
-.card.active .photo{animation:slowZoom 3.4s ease-out .96s both}
-@keyframes photoPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
-@keyframes slowZoom{from{transform:scale(1)}to{transform:scale(1.07)}}
+/* ============ 结尾 ============ */
+.ending{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  padding:24px;text-align:center;
+  background:radial-gradient(125% 125% at 50% 8%,var(--navy-2),var(--navy) 46%,var(--navy-deep) 100%)}
+.end-days{font-size:clamp(18px,5vw,26px);font-weight:700;color:var(--sky);font-variant-numeric:tabular-nums;letter-spacing:1px}
+.end-cn{font-size:clamp(28px,8vw,52px);font-weight:800;letter-spacing:4px}
+.end-en{font-size:clamp(13px,3.4vw,16px);line-height:1.7;color:rgba(255,255,255,.72);max-width:86%;letter-spacing:.5px}
 
-/* ============ 文字：图片放大后延迟浮现 ============ */
-.cap{text-align:center;margin-top:19px;opacity:0;transform:translateY(14px)}
-.card.active .cap{opacity:1;transform:translateY(0);
-  transition:opacity .6s ease .58s,transform .6s ease .58s}
-.cap h2{font-family:var(--serif);font-size:clamp(18px,2.6vw,22px);font-weight:600;color:var(--ink)}
-.cap p{font-size:clamp(13.5px,1.7vw,15px);line-height:1.8;color:var(--muted);margin-top:6px}
-
-/* ============ 首屏日历卡 ============ */
-.cal-card{text-align:center}
-.cal-top{display:flex;align-items:center;justify-content:space-between;
-  background:var(--blue);border-radius:16px;padding:11px 18px;margin-bottom:24px}
-.cal-top .m{color:#fff;font-family:var(--serif);font-size:15px;letter-spacing:2px}
-.cal-top .d{color:#e8f3ff;font-size:12px;letter-spacing:1px}
-.cal-since{font-size:12px;letter-spacing:4px;color:var(--muted);margin-bottom:10px}
-.big-days{font-family:var(--serif);font-weight:700;line-height:1.05;
-  font-size:clamp(66px,13vw,110px);color:var(--blue-deep);font-variant-numeric:tabular-nums}
-.big-days small{font-size:.32em;color:var(--blue);font-weight:600;margin-left:6px}
-.cal-clock{margin-top:18px;font-size:clamp(13px,1.7vw,15px);color:var(--muted);
-  font-variant-numeric:tabular-nums;letter-spacing:1px}
-.cal-clock b{color:var(--ink);font-weight:600}
-.loadbox{margin-top:26px}
-.loadbar{height:7px;background:var(--blue-pale);border-radius:7px;overflow:hidden}
-.loadbar i{display:block;height:100%;width:0%;border-radius:7px;
-  background:linear-gradient(90deg,var(--blue-soft),var(--blue-deep));transition:width .35s ease}
-.loadtxt{margin-top:9px;font-size:12px;color:var(--muted);letter-spacing:1px}
-
-/* ============ 纯文字卡（序章/结尾） ============ */
-.text-card{text-align:center}
-.text-card .lead{font-family:var(--serif);font-size:clamp(23px,3.8vw,34px);
-  line-height:1.55;font-weight:600;color:var(--ink)}
-.text-card .sub{font-size:clamp(14px,1.8vw,16px);line-height:2;color:var(--muted);margin-top:20px}
-.text-card .date-chip{display:inline-block;font-family:var(--serif);font-size:14px;letter-spacing:2px;
-  color:var(--blue-deep);border:1px solid var(--blue-soft);padding:8px 20px;border-radius:30px;margin-bottom:24px}
-.end-days{font-family:var(--serif);font-size:clamp(40px,7vw,64px);font-weight:700;
-  color:var(--blue-deep);font-variant-numeric:tabular-nums;margin:6px 0 18px}
-
-/* ============ 底部圆点 ============ */
-.dots{position:fixed;bottom:16px;left:0;right:0;z-index:90;display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:0 12px}
-.dots i{width:7px;height:7px;border-radius:50%;background:rgba(74,144,217,.3);transition:all .4s var(--ease)}
-.dots i.on{background:var(--blue-deep);transform:scale(1.35)}
-
-/* ============ 左右翻页热区提示 ============ */
-.side-hint{position:fixed;top:50%;transform:translateY(-50%);z-index:85;color:var(--blue-soft);
-  font-size:26px;opacity:.55;pointer-events:none;user-select:none}
-.side-hint.l{left:16px}.side-hint.r{right:16px}
-
-/* ============ 响应式 ============ */
-@media (max-width:600px){
-  .brand{display:none}
-  .card{padding:18px 18px 22px;border-radius:22px}
-  .photo{height:44vh;border-radius:15px}
-  .cap{margin-top:15px}
-  .side-hint{display:none}
+/* ============ 手机 / 矮屏优化 ============ */
+@media (max-height:520px){
+  .shot-meta{padding-bottom:calc(14px + env(safe-area-inset-bottom));gap:7px}
+  .tag{font-size:clamp(28px,7vh,46px)}
+  .splash-load{bottom:calc(14px + env(safe-area-inset-bottom))}
+  .splash-days .num{font-size:clamp(70px,20vh,130px)}
 }
 /* ============ 低动效兜底 ============ */
 @media (prefers-reduced-motion:reduce){
-  .bgblob,.card.active .photo{animation:none}
-  .card{transition:opacity .3s ease}
-  .card.active{animation:none;opacity:1;transform:none}
-  .card.leaving{animation:none;opacity:0}
-  .card.active .photo img.story-img{animation:none;opacity:1;transform:none}
-  .card.active .cap{transition:none;opacity:1;transform:none}
+  .splash .rise{animation:none;opacity:1;transform:none}
+  .shot,.ending{transition:opacity .3s ease;transform:none}
+  .shot.active .shot-img img{animation:none;opacity:1;transform:scale(1.1)}
+  .shot.active .tag,.shot.active .tag-line{animation:none;opacity:1;transform:none;width:62px}
 }
 </style>
 </head>
 <body>
-<!-- ===== 顶部控制条 ===== -->
-<div class="topbar">
-  <div class="brand">HAORUI <span>&times;</span> ZIXVAN</div>
-  <div id="progress"><i id="progressBar"></i></div>
-  <div id="counter">0/19</div>
-  <button id="playBtn" aria-label="暂停或播放">
-    <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-    <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M8 5.5v13a1 1 0 0 0 1.52.86l10-6.5a1 1 0 0 0 0-1.72l-10-6.5A1 1 0 0 0 8 5.5z"/></svg>
-  </button>
+
+<!-- ===== 首屏：大天数 + 预加载 ===== -->
+<div class="splash" id="splash">
+  <div class="since rise r1">SINCE&nbsp;&nbsp;2022.09.01</div>
+  <div class="splash-lead rise r2">我们在一起，已经</div>
+  <div class="splash-days rise r3">
+    <span class="num" id="dayCount">0</span><span class="unit">天</span>
+  </div>
+  <div class="splash-load rise r4">
+    <div class="loadbar"><i id="loadFill"></i></div>
+    <div class="loadtxt" id="loadTxt">正在准备我们的回忆 0/16</div>
+  </div>
 </div>
-<div id="pauseHint">已手动暂停，稍后自动恢复</div>
-<div class="side-hint l">&#10094;</div>
-<div class="side-hint r">&#10095;</div>
 
-<!-- ===== 背景光斑 ===== -->
-<div class="bgblob b1"></div>
-<div class="bgblob b2"></div>
-<div class="bgblob b3"></div>
+<!-- ===== 自动剪辑舞台 ===== -->
+<div class="reel" id="reel">
 
-<!-- ===== 3D 翻页舞台 ===== -->
-<div class="stage-wrap"><div id="stage">
-
-  <!-- 卡片 0：首屏日历（实时天数 + 预加载） -->
-  <div class="card cal-card active" data-dur="3000">
-    <div class="cal-top"><span class="m">我们的日历</span><span class="d">OUR CALENDAR</span></div>
-    <div class="cal-since">SINCE&nbsp;&nbsp;2022.09.01</div>
-    <div class="big-days"><span id="dayCount">0</span><small>天</small></div>
-    <div class="cal-clock">也就是 <b id="hourCount">0</b> 小时 <b id="minCount">0</b> 分 <b id="secCount">0</b> 秒</div>
-    <div class="loadbox">
-      <div class="loadbar"><i id="loadFill"></i></div>
-      <div class="loadtxt" id="loadTxt">正在准备我们的回忆 0/16</div>
-    </div>
+  <!-- 关于我 RUI -->
+  <div class="shot">
+    <div class="shot-img"><img class="kb-1" src="a1.jpg" alt="RUI"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">RUI</span></div>
   </div>
-
-  <!-- 卡片 1：序章 -->
-  <div class="card text-card" data-dur="3800">
-    <div class="date-chip">2022 年 9 月 1 日</div>
-    <div class="lead">开学第一天，人群那么吵，我却先听见了你的声音。</div>
-    <div class="sub">那时候我们都还不知道，这个随口打招呼的人，会在后来的日子里，陪我走过一个又一个学期。</div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-2" src="a2.jpg" alt="RUI"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">RUI</span></div>
+  </div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-3" src="a3.jpg" alt="RUI"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">RUI</span></div>
+  </div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-4" src="a5.jpg" alt="RUI"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">RUI</span></div>
+  </div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-5" src="a6.jpg" alt="RUI"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">RUI</span></div>
   </div>
 
-  <!-- 关于我 5 张 -->
-  <div class="card" data-dur="3400" data-chapter="关于我">
-    <div class="photo"><img class="story-img" src="a1.jpg" alt="日常的我"></div>
-    <div class="cap"><h2>日常的我</h2><p>黑T恤、抱臂、表情有点严肃，其实只是不太会笑。</p></div>
+  <!-- 关于你 VAN -->
+  <div class="shot">
+    <div class="shot-img"><img class="kb-1" src="b1.jpg" alt="VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">VAN</span></div>
   </div>
-  <div class="card" data-dur="3400" data-chapter="关于我">
-    <div class="photo"><img class="story-img" src="a2.jpg" alt="橘子洲头"></div>
-    <div class="cap"><h2>橘子洲头</h2><p>风很大，小国旗被吹得猎猎响，身后是湘江和一整个夏天。</p></div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-2" src="b2.jpg" alt="VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">VAN</span></div>
   </div>
-  <div class="card" data-dur="3400" data-chapter="关于我">
-    <div class="photo"><img class="story-img" src="a3.jpg" alt="展馆里"></div>
-    <div class="cap"><h2>展馆里</h2><p>一首《渔家傲》读了很久，隔着一千年的秋天，忽然懂了什么叫乡愁。</p></div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-3" src="b3.jpg" alt="VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">VAN</span></div>
   </div>
-  <div class="card" data-dur="3400" data-chapter="关于我">
-    <div class="photo"><img class="story-img" src="a5.jpg" alt="教室日常"></div>
-    <div class="cap"><h2>教室日常</h2><p>比个耶，桌上的《数学一本通》还停在没做完的那一页。</p></div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-4" src="b4.jpg" alt="VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">VAN</span></div>
   </div>
-  <div class="card" data-dur="3400" data-chapter="关于我">
-    <div class="photo"><img class="story-img" src="a6.jpg" alt="湖边三连"></div>
-    <div class="cap"><h2>湖边三连</h2><p>鬼脸、张嘴、假笑，不正经的证据一次性集齐。</p></div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-5" src="b5.jpg" alt="VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">VAN</span></div>
   </div>
-
-  <!-- 关于你 6 张 -->
-  <div class="card" data-dur="3400" data-chapter="关于你">
-    <div class="photo"><img class="story-img" src="b1.jpg" alt="商场里"></div>
-    <div class="cap"><h2>商场里</h2><p>白T恤，头发有点乱，抬头的瞬间被镜头抓住。</p></div>
-  </div>
-  <div class="card" data-dur="3400" data-chapter="关于你">
-    <div class="photo"><img class="story-img" src="b2.jpg" alt="汉服"></div>
-    <div class="cap"><h2>汉服</h2><p>银冠步摇，轻纱广袖，你站在那里，像从古画里走出来的人。</p></div>
-  </div>
-  <div class="card" data-dur="3400" data-chapter="关于你">
-    <div class="photo"><img class="story-img" src="b3.jpg" alt="老街黄昏"></div>
-    <div class="cap"><h2>老街黄昏</h2><p>背着包走在青砖巷里，人群在身后，灯一盏盏亮起来。</p></div>
-  </div>
-  <div class="card" data-dur="3400" data-chapter="关于你">
-    <div class="photo"><img class="story-img" src="b4.jpg" alt="取景框"></div>
-    <div class="cap"><h2>取景框</h2><p>九宫格刚好框住你，连快门都还没来得及按。</p></div>
-  </div>
-  <div class="card" data-dur="3400" data-chapter="关于你">
-    <div class="photo"><img class="story-img" src="b5.jpg" alt="午后犯困"></div>
-    <div class="cap"><h2>午后犯困</h2><p>趴在卷子上，困意总是比解题思路先到一步。</p></div>
-  </div>
-  <div class="card" data-dur="3400" data-chapter="关于你">
-    <div class="photo"><img class="story-img" src="b6.jpg" alt="晴天"></div>
-    <div class="cap"><h2>晴天</h2><p>天蓝得像一整块宝石，你站在云下面，头发被风吹起来。</p></div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-1" src="b6.jpg" alt="VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">VAN</span></div>
   </div>
 
-  <!-- 我们 5 张（按时间顺序） -->
-  <div class="card" data-dur="3400" data-chapter="我们">
-    <div class="photo"><img class="story-img" src="c1.jpg" alt="第一张合照"></div>
-    <div class="cap"><h2>第一张合照</h2><p>2025 年 6 月 24 日，校服、阳光、还有凑过来的两个脑袋。</p></div>
+  <!-- 我们 RUI × VAN -->
+  <div class="shot">
+    <div class="shot-img"><img class="kb-2" src="c1.jpg" alt="RUI VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">RUI&nbsp;&times;&nbsp;VAN</span></div>
   </div>
-  <div class="card" data-dur="3400" data-chapter="我们">
-    <div class="photo"><img class="story-img" src="c2.jpg" alt="教室里"></div>
-    <div class="cap"><h2>教室里</h2><p>你比了个耶，我在旁边笑，黑板上的字还没擦。</p></div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-3" src="c2.jpg" alt="RUI VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">RUI&nbsp;&times;&nbsp;VAN</span></div>
   </div>
-  <div class="card" data-dur="3400" data-chapter="我们">
-    <div class="photo"><img class="story-img" src="c3.jpg" alt="下晚自习的路"></div>
-    <div class="cap"><h2>下晚自习的路</h2><p>夜里光线很暗，路灯把我们的影子拉得很长。</p></div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-4" src="c3.jpg" alt="RUI VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">RUI&nbsp;&times;&nbsp;VAN</span></div>
   </div>
-  <div class="card" data-dur="3400" data-chapter="我们">
-    <div class="photo"><img class="story-img" src="c4.jpg" alt="小小车厢"></div>
-    <div class="cap"><h2>小小车厢</h2><p>两个头挨在一起，比耶的手有点晃，画面却很稳。</p></div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-5" src="c4.jpg" alt="RUI VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">RUI&nbsp;&times;&nbsp;VAN</span></div>
   </div>
-  <div class="card" data-dur="3400" data-chapter="我们">
-    <div class="photo"><img class="story-img" src="c5.jpg" alt="车窗反光"></div>
-    <div class="cap"><h2>车窗反光</h2><p>你在镜子里，我在镜子外，同一个夜晚装下了两个我们。</p></div>
+  <div class="shot">
+    <div class="shot-img"><img class="kb-1" src="c5.jpg" alt="RUI VAN"></div>
+    <div class="shot-meta"><span class="tag-line"></span><span class="tag">RUI&nbsp;&times;&nbsp;VAN</span></div>
   </div>
 
   <!-- 结尾 -->
-  <div class="card text-card" data-dur="4200">
-    <div class="lead">到今天，我们已经一起走过</div>
+  <div class="ending" id="ending">
     <div class="end-days" id="endDays">0 天</div>
-    <div class="sub">这不是终点，是下一段故事的开头。来日方长，我们慢慢走——以后还要一起拍很多很多张照片。</div>
+    <div class="end-cn">相逢有时，来日方长</div>
+    <div class="end-en">We meet for a reason, and there is always tomorrow.</div>
   </div>
 
-</div></div>
-
-<!-- ===== 底部圆点 ===== -->
-<div class="dots" id="dots"></div>
+</div>
 
 <script>
 (function(){
   "use strict";
-  var START = new Date(2022, 8, 1, 0, 0, 0);
-  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var START=new Date(2022,8,1,0,0,0);
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var SHOT_DUR=2500, END_DUR=3400, SPLASH_MIN=2600;
 
-  var cards = Array.prototype.slice.call(document.querySelectorAll(".card"));
-  var durations = cards.map(function(c){ return parseInt(c.getAttribute("data-dur"),10); });
-  var progressBar = document.getElementById("progressBar");
-  var counter = document.getElementById("counter");
-  var playBtn = document.getElementById("playBtn");
-  var iconPlay = document.getElementById("iconPlay");
-  var iconPause = document.getElementById("iconPause");
-  var pauseHint = document.getElementById("pauseHint");
-  var dotsRoot = document.getElementById("dots");
+  var splash=document.getElementById("splash");
+  var dayNum=document.getElementById("dayCount");
+  var loadFill=document.getElementById("loadFill"), loadTxt=document.getElementById("loadTxt");
+  var reel=document.getElementById("reel");
+  var shots=Array.prototype.slice.call(reel.querySelectorAll(".shot"));
+  var ending=document.getElementById("ending");
+  var playItems=shots.concat([ending]);
+  function durOf(el){ return el.classList.contains("ending")?END_DUR:SHOT_DUR; }
 
-  /* 底部圆点（对应全部卡片） */
-  cards.forEach(function(){ var i=document.createElement("i"); dotsRoot.appendChild(i); });
-  var dots = Array.prototype.slice.call(dotsRoot.children);
-
-  /* ============ 实时天数计算 ============ */
-  var dayEl=document.getElementById("dayCount"), hourEl=document.getElementById("hourCount"),
-      minEl=document.getElementById("minCount"), secEl=document.getElementById("secCount"),
-      endEl=document.getElementById("endDays");
-  function metrics(){
-    var diff=Date.now()-START.getTime();
-    return {diff:diff, days:Math.floor(diff/86400000), hours:Math.floor(diff/3600000),
-      mins:Math.floor(diff/60000)%60, secs:Math.floor(diff/1000)%60};
-  }
-  function pad(n){ return String(n).padStart(2,"0"); }
-  function renderClock(m){
-    hourEl.textContent=m.hours.toLocaleString();
-    minEl.textContent=pad(m.mins); secEl.textContent=pad(m.secs);
-    endEl.textContent=m.days.toLocaleString()+" 天";
-  }
-  var targetDays=metrics().days;
-  if(reduceMotion){
-    dayEl.textContent=targetDays.toLocaleString();
+  /* ===== 相识天数 ===== */
+  var target=Math.floor((Date.now()-START.getTime())/86400000);
+  if(reduce){
+    dayNum.textContent=target.toLocaleString();
   }else{
-    var t0=performance.now(), TW=1400;
-    (function tween(now){
-      var p=Math.min(1,(now-t0)/TW), eased=1-Math.pow(1-p,3);
-      dayEl.textContent=Math.round(targetDays*eased).toLocaleString();
-      if(p<1) requestAnimationFrame(tween);
+    var t0=performance.now();
+    (function tw(now){
+      var p=Math.min(1,(now-t0)/1400), eased=1-Math.pow(1-p,3);
+      dayNum.textContent=Math.round(target*eased).toLocaleString();
+      if(p<1) requestAnimationFrame(tw);
     })(t0);
   }
-  renderClock(metrics());
-  setInterval(function(){
-    var m=metrics(); renderClock(m);
-    dayEl.textContent=m.days.toLocaleString();
-  },1000);
+  document.getElementById("endDays").textContent=target.toLocaleString()+" 天";
 
-  /* ============ 图片预加载（首屏日历期间） ============ */
-  var storyImgs=cards.filter(function(c){ return c.querySelector(".story-img"); })
-    .map(function(c){ return c.querySelector(".story-img"); });
-  var loadFill=document.getElementById("loadFill"), loadTxt=document.getElementById("loadTxt");
-  var total=storyImgs.length, done=0, ready=false, beginAt=0;
-  function markReady(){
-    ready=true;
-    loadTxt.textContent="回忆已就绪，故事即将开始";
-    beginAt=performance.now()+1500;   /* 至少展示日历一会 */
-  }
-  storyImgs.forEach(function(im){
+  /* ===== 图片预加载 ===== */
+  var imgs=shots.map(function(s){ return s.querySelector("img"); });
+  var total=imgs.length, done=0, ready=false, readyAt=0;
+  imgs.forEach(function(im){
     var probe=new Image();
     probe.onload=probe.onerror=function(){
       done++;
       var pct=Math.round(done/total*100);
       loadFill.style.width=pct+"%";
       loadTxt.textContent="正在准备我们的回忆 "+done+"/"+total;
-      if(done===total) markReady();
+      if(done===total){
+        ready=true; readyAt=performance.now();
+        loadTxt.textContent="故事即将开始";
+      }
     };
     probe.src=im.src;
   });
-  if(total===0) markReady();
 
-  /* ============ 翻页控制 ============ */
-  var state={idx:0, elapsed:0, auto:!reduceMotion, manualUntil:0};
+  /* ===== 切换（垂直弹性） ===== */
+  var idx=0, elapsed=0, last=performance.now(), phase="splash";
+  var splashStart=performance.now();
   function goTo(i){
-    var prev=cards[state.idx];
-    prev.classList.remove("active");
-    prev.classList.add("leaving");
-    (function(old){ setTimeout(function(){ old.classList.remove("leaving"); },560); })(prev);
-    state.idx=(i+cards.length)%cards.length;
-    state.elapsed=0;
-    var cur=cards[state.idx];
-    cur.classList.add("active");
-    counter.textContent=(state.idx+1)+"/"+cards.length;
-    dots.forEach(function(d,k){ d.classList.toggle("on",k===state.idx); });
+    var cur=playItems[idx];
+    cur.classList.remove("active");
+    cur.classList.add("leave");
+    setTimeout(function(){ cur.classList.remove("leave"); },620);
+    idx=(i+playItems.length)%playItems.length;
+    playItems[idx].classList.add("active");
+    elapsed=0;
   }
-  dots[0].classList.add("on");
-  counter.textContent="1/"+cards.length;
 
-  /* ============ 自动播放主时钟 ============ */
-  var last=performance.now();
+  /* ===== 主时钟 ===== */
   function frame(now){
     var dt=now-last; last=now;
-    var manualPaused=now<state.manualUntil;
-    var canRun=state.auto && !manualPaused && ready && now>=beginAt;
-    if(canRun){
-      state.elapsed+=dt;
-      if(state.elapsed>=durations[state.idx]) goTo(state.idx+1);
+    if(phase==="splash"){
+      var shown=now-splashStart;
+      if(ready && shown>=SPLASH_MIN && now>=readyAt+300){
+        phase="play";
+        splash.classList.add("out");
+        playItems[0].classList.add("active");
+        setTimeout(function(){ splash.style.display="none"; },660);
+      }
+    }else{
+      elapsed+=dt;
+      if(elapsed>=durOf(playItems[idx])) goTo(idx+1);
     }
-    progressBar.style.width=Math.min(100,state.elapsed/durations[state.idx]*100)+"%";
-    var paused=!state.auto||manualPaused;
-    iconPlay.style.display=paused?"block":"none";
-    iconPause.style.display=paused?"none":"block";
-    pauseHint.classList.toggle("show",manualPaused);
     requestAnimationFrame(frame);
   }
-
-  /* ============ 手动干预 ============ */
-  function pauseAwhile(){
-    if(state.auto) state.manualUntil=performance.now()+10000;
-  }
-  function step(dir){
-    pauseAwhile(); goTo(state.idx+dir);
-  }
-  window.addEventListener("keydown",function(e){
-    if(e.key==="ArrowRight"||e.key==="ArrowDown") step(1);
-    else if(e.key==="ArrowLeft"||e.key==="ArrowUp") step(-1);
-    else if(e.key===" "){ e.preventDefault(); pauseAwhile(); }
-  });
-  /* 点击屏幕左右半区翻页 */
-  document.querySelector(".stage-wrap").addEventListener("click",function(e){
-    if(e.target.closest("button")) return;
-    var x=e.clientX/window.innerWidth;
-    if(x<0.35) step(-1); else if(x>0.65) step(1);
-  });
-  /* 触摸滑动 */
-  var tx=null;
-  window.addEventListener("touchstart",function(e){ tx=e.touches[0].clientX; },{passive:true});
-  window.addEventListener("touchend",function(e){
-    if(tx===null) return;
-    var dx=e.changedTouches[0].clientX-tx;
-    if(Math.abs(dx)>45) step(dx<0?1:-1);
-    tx=null;
-  },{passive:true});
-
-  /* ============ 播放/暂停按钮 ============ */
-  playBtn.addEventListener("click",function(){
-    state.auto=!state.auto;
-    if(state.auto){ state.manualUntil=0; }
-  });
-
   requestAnimationFrame(frame);
 })();
 </script>
